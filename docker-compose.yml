@@ -1,0 +1,15 @@
+version: "3.9"
+services:
+  # this is the service for our webapp
+  app:
+    # build Dockerfile in current directory
+    build: .
+    command: /bin/sh -c "while sleep 1000; do :; done"
+  
+  # database service
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: another_very_good_password

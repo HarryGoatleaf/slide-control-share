@@ -1,27 +1,31 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.238.0/containers/docker-existing-dockerfile
 {
-	"name": "Existing Dockerfile",
+	"name": "Existing Docker Compose (Extend)",
 
 	// Sets the run context to one level up instead of the .devcontainer folder.
-	"context": "..",
+	// "context": "..",
 
-	// Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
-	"dockerFile": "Dockerfile",
+	"dockerComposeFile": "../docker-compose.yml",
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [ ],
+	
+	"workspaceFolder": "/app",
+	
+	"service": "app",
 
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"ms-python.python"
+				"ms-python.python",
+				"ms-azuretools.vscode-docker"
 			]
 		}
 	},
 	
 	// Uncomment the next line to run commands after the container is created - for example installing curl.
-	"postCreateCommand": "pip install --no-cache-dir -r ./src/requirements.txt"
+	// "postCreateCommand": "pip install --no-cache-dir -r ./requirements.txt"
 
 	// Uncomment when using a ptrace-based debugger like C++, Go, and Rust
 	// "runArgs": [ "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined" ],
