@@ -4,12 +4,19 @@ services:
   app:
     # build Dockerfile in current directory
     build: .
+    volumes:
+      - .:/app
+    # configure app
+    environment:
+      FLASK_SECRET_KEY: good_password
+      FLASK_DATABASE: mongodb://root:better_password@mongo:27017
+    # prevent container from exiting
     command: /bin/sh -c "while sleep 1000; do :; done"
-  
+
   # database service
   mongo:
     image: mongo
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: another_very_good_password
+      MONGO_INITDB_ROOT_PASSWORD: better_password
