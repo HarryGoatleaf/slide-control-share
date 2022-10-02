@@ -27,6 +27,11 @@ def create_app():
   app.register_blueprint(hello.bp)
   app.register_blueprint(presentation.bp)
 
+  @app.route('/')
+  def landing_page():
+    return redirect(url_for('presentation.create'))
+
+
   
   # ensure the instance folder exists
   try:

@@ -4,15 +4,14 @@ from bson.objectid import ObjectId
 import functools
 
 bp = Blueprint('hello', __name__)
-
-@bp.route('/', methods = ['GET', 'POST'])
-def hello():
+@bp.route('/<path:req_path>/hello', methods = ['GET', 'POST'])
+def hello(req_path):
+  current_app.logger.info(req_path)
   if request.method == 'GET':
     if not 'user_id' in session:
       return render_template('hello.html')
     else:
-      # TODO: what happens if already registered user goes to site?
-      return redirect(url_for('presentation.create'))
+      return redirect('/' + req_path)
   else:
     if not 'user_id' in session:
       # load database
@@ -32,7 +31,7 @@ def hello():
       # TODO: what happens if an already registered user sets a new name? 
       #       this currently cant happen
       pass
-    return redirect(url_for('presentation.create'))
+    return redirect('/' + req_path)
 
 @bp.before_app_request
 def load_user():
@@ -48,6 +47,6 @@ def name_required(view):
   @functools.wraps(view)
   def wrapped_view(**kwargs):
     if g.user is None:
-      return redirect(url_for('hello.hello'))
+      return redirect(request.path + '/hello')
     return view(**kwargs)
   return wrapped_view
