@@ -1,4 +1,4 @@
-from flask import Blueprint, g, redirect, render_template, url_for, session, request
+from flask import Blueprint, g, redirect, render_template, url_for, session, request, current_app
 from slide_control_share.db import get_db
 from bson.objectid import ObjectId
 import functools
@@ -8,18 +8,31 @@ bp = Blueprint('hello', __name__)
 @bp.route('/', methods = ['GET', 'POST'])
 def hello():
   if request.method == 'GET':
-    return render_template('hello.html')
+    if not 'user_id' in session:
+      return render_template('hello.html')
+    else:
+      # TODO: what happens if already registered user goes to site?
+      return redirect(url_for('presentation.create'))
   else:
     if not 'user_id' in session:
-      # new user
-      session['username'] = request.form['username']
+      # load database
       db = get_db()
       users = db['users']
-      user_id = str(users.insert_one({
-        "name": session['username']
-      }).inserted_id)
+      
+      # create user object
+      user = { "name": request.form['username'] }
+
+      # insert user in database
+      user_id = str(users.insert_one(user).inserted_id)
       session['user_id'] = user_id
-    return redirect(url_for('presentation.presentation', presentation_id = 420))
+
+      # log
+      current_app.logger.info('Created user «%s»', user['name'])
+    else:
+      # TODO: what happens if an already registered user sets a new name? 
+      #       this currently cant happen
+      pass
+    return redirect(url_for('presentation.create'))
 
 @bp.before_app_request
 def load_user():
