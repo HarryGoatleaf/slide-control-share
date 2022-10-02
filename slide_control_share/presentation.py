@@ -12,7 +12,7 @@ bp = Blueprint('presentation', __name__, url_prefix="/presentation")
 def create():
   if request.method == 'GET':
     return render_template('create.html')
-  else:
+  elif request.method == 'POST':
     # load database
     db = get_db()
     presentations = db['presentations']
@@ -23,9 +23,9 @@ def create():
       "users": [g.user['_id']],
       "content": request.form['content'],
       }
-
-    # insert user in database
+    # insert presentaiton in database
     presentation_id = str(presentations.insert_one(presentation).inserted_id)
+    # set users current presentation to the one created
     session['presentation_id'] = presentation_id
 
     # log
@@ -50,6 +50,7 @@ def presentation(presentation_id):
   # check if requested presentation exists
   if req_pres == None:
     abort(404)
+
   # join presentation client side
   session['presentation_id'] = presentation_id
   load_presentation()

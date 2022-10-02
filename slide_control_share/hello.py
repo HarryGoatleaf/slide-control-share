@@ -6,21 +6,16 @@ import functools
 bp = Blueprint('hello', __name__)
 @bp.route('/<path:req_path>/hello', methods = ['GET', 'POST'])
 def hello(req_path):
-  current_app.logger.info(req_path)
-  if request.method == 'GET':
-    if not 'user_id' in session:
-      return render_template('hello.html')
-    else:
-      return redirect('/' + req_path)
-  else:
+  if request.method == 'GET' and not 'user_id' in session:
+    return render_template('hello.html')
+  elif request.method == 'POST':
     if not 'user_id' in session:
       # load database
       db = get_db()
       users = db['users']
       
       # create user object
-      user = { "name": request.form['username'] }
-
+      user = { 'name': request.form['username'] }
       # insert user in database
       user_id = str(users.insert_one(user).inserted_id)
       session['user_id'] = user_id
@@ -31,7 +26,9 @@ def hello(req_path):
       # TODO: what happens if an already registered user sets a new name? 
       #       this currently cant happen
       pass
-    return redirect('/' + req_path)
+
+  # user is now named => redirect him to requested path
+  return redirect('/' + req_path)
 
 @bp.before_app_request
 def load_user():
