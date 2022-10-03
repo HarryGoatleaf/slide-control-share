@@ -24,21 +24,21 @@ We recommend using docker/docker-compose and VSCode with the "Dev Containers" ex
 
 ```
 /slide-control-share
-├── Readme.md # this file :)
-├── docker-compose.yml
-├── Dockerfile # docker files are currently only suitable for debugging
-├── requirements.txt # python package dependencies
+├── Readme.md
+├── docker-compose.yml          # |
+├── Dockerfile                  # | docker files are currently only suitable for debugging
+├── requirements.txt
 ├── slide_control_share
-│   ├── __init__.py # configures app, registers extensions&blueprints
-│   ├── db.py # database
-│   ├── hello.py
-│   ├── presentation.py
-│   ├── static
+│   ├── __init__.py             # configures app, registers extensions&blueprints
+│   ├── db.py                   # database module
+│   ├── hello.py                # |
+│   ├── presentation.py         # | blueprints
+│   ├── static                  # contains static files like stylesheets
 │   │   └── example.css
 │   └── templates
 │       ├── create.html
 │       ├── hello.html
 │       └── presentation.html
-├── instance
+├── instance                    # app runtime data
 └── slide-control-share-diagram
 ```
