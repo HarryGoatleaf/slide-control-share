@@ -8,7 +8,29 @@
 </head>
 <body>
     <h1>Hello {{user['name']}}#{{user['_id']}} in presentation: {{ presentation['_id'] }}</h1>
-    Content: {{ presentation['content']}} <br>
+    <p>
+        Content: {{ presentation['content']}} 
+    </p>
+    <p id="page_counter">
+        {{presentation['current_slide']}}
+    </p>
+    <p>
+        <button onclick="prev_slide()">Previous Slide</button>
+        <button onclick="next_slide()">Next Slide</button>
+    </p>
     Users: {{ presentation['users'] }}
+    
+    <!-- copy from Flask-SocketIO docs -->
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+        integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+        crossorigin="anonymous"></script>
+    <!-- this is an ugly hack. TODO: get rid of it -->
+    <script type="text/javascript" charset="utf-8">
+    var current_slide = {{ presentation['current_slide'] }}
+    </script>
+
+    <script type="text/javascript" charset="utf-8" 
+    src="{{ url_for('static', filename='presentation.js') }}"></script>
 </body>
 </html>

@@ -2,3 +2,4 @@ Flask
 Flask-Sijax
 flask-socketio
 pymongo
+eventlet

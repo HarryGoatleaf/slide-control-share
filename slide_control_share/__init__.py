@@ -2,6 +2,8 @@ from flask import Flask, render_template, redirect, url_for, session, request, c
 from flask_socketio import SocketIO
 import flask_sijax
 import os
+import json
+from bson.objectid import ObjectId
 
 def create_app():
   app = Flask(__name__)
@@ -11,9 +13,6 @@ def create_app():
   app.config.from_prefixed_env()
 
   # extensions
-  # socketio
-  socketio = SocketIO()
-  socketio.init_app(app)
   # sijax
   sijax = flask_sijax.Sijax()
   sijax.init_app(app)
@@ -31,8 +30,6 @@ def create_app():
   def landing_page():
     return redirect(url_for('presentation.create'))
 
-
-  
   # ensure the instance folder exists
   try:
     os.makedirs(app.instance_path)
@@ -41,3 +38,31 @@ def create_app():
 
 
   return app
+
+def init_socketio(app):
+  # socketio
+  socketio = SocketIO(app)
+    
+  @socketio.event
+  def set_slide(set_slide_msg):
+    new_slide = int(set_slide_msg.get('new_slide'))
+    if new_slide == None:
+      current_app.logger.error("set_slide: malformed request")
+      return
+
+    # check if user is in presentation
+    presentation_id = session.get('presentation_id')
+    if presentation_id == None:
+      current_app.logger.error("socket accessed nonexistent presentation")
+      return
+
+    # load database
+    from . import db
+    db = db.get_db()
+    presentations = db['presentations']
+    # change current slide in db
+    presentations.update_one({"_id": ObjectId(presentation_id)}, {'$set': {'current_slide': new_slide}})
+    
+    # broadcast new slide to all clients
+
+  return app, socketio

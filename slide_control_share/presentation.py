@@ -16,12 +16,13 @@ def create():
     # load database
     db = get_db()
     presentations = db['presentations']
-    
+
     # create presentation object
     presentation = { 
       "host": g.user['_id'],
       "users": [g.user['_id']],
       "content": request.form['content'],
+      "current_slide": 0
       }
     # insert presentaiton in database
     presentation_id = str(presentations.insert_one(presentation).inserted_id)
@@ -32,7 +33,7 @@ def create():
     current_app.logger.info('User «%s» created presentation «%s» ', 
       g.user['name'], 
       presentation_id)
-    
+
     return redirect(url_for('presentation.presentation', presentation_id = presentation_id))
 
 @bp.route('/<string:presentation_id>')
@@ -67,7 +68,7 @@ def presentation(presentation_id):
       str(g.user['_id']),
       str(g.presentation['_id']))
   return render_template('presentation.html', user = g.user, presentation = g.presentation)
-
+  
 @bp.before_request
 def load_presentation():
   presentation_id = session.get('presentation_id')
