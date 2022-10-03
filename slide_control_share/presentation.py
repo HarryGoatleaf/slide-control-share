@@ -2,7 +2,7 @@ from flask import Blueprint, g, redirect, render_template, url_for, session, req
 from slide_control_share.db import get_db
 from slide_control_share.hello import name_required
 from bson.objectid import ObjectId
-import functools
+from . import socketio
 
 bp = Blueprint('presentation', __name__, url_prefix="/presentation")
 
@@ -62,11 +62,11 @@ def presentation(presentation_id):
     # update local data. database query might be unnecesary
     g.presentation = presentations.find_one({"_id": ObjectId(presentation_id)})
     # TODO: broadcast new user to other users
-    
     # log
     current_app.logger.info('Added user «%s» to session «%s»', 
       str(g.user['_id']),
       str(g.presentation['_id']))
+
   return render_template('presentation.html', user = g.user, presentation = g.presentation)
   
 @bp.before_request
