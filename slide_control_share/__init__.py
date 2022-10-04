@@ -38,7 +38,6 @@ def create_app():
   except OSError:
     pass
 
-
   return app
   
 from . import events

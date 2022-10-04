@@ -4,6 +4,7 @@ from bson.objectid import ObjectId
 import functools
 
 bp = Blueprint('hello', __name__)
+
 @bp.route('/<path:req_path>/hello', methods = ['GET', 'POST'])
 def hello(req_path):
   if request.method == 'GET' and not 'user_id' in session:
