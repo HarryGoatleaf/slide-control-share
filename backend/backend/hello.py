@@ -1,5 +1,5 @@
 from flask import Blueprint, g, redirect, render_template, url_for, session, request, current_app
-from slide_control_share.db import get_db
+from .db import get_db
 from bson.objectid import ObjectId
 import functools
 

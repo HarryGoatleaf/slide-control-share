@@ -1,6 +1,6 @@
 from flask import Blueprint, g, redirect, render_template, url_for, session, request, current_app, abort
-from slide_control_share.db import get_db
-from slide_control_share.hello import name_required
+from .db import get_db
+from .hello import name_required
 from bson.objectid import ObjectId
 from . import socketio
 

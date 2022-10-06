@@ -1,14 +1,19 @@
 version: "3.9"
 services:
   backend:
-    # build Dockerfile in current directory
-    build: backend
+    build: ../../backend
     # configure app
     environment:
       FLASK_SECRET_KEY: good_password
       FLASK_DATABASE: mongodb://root:better_password@mongo:27017
-    ports:
-      - "5000:5000"
+
+  frontend:
+    build: 
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - ..:/app
+    command: /bin/sh -c "while sleep 1000; do :; done"
 
   # database service
   mongo:

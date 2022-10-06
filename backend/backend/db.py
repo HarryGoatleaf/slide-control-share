@@ -22,7 +22,6 @@ def close_db(e=None):
         db_client.close()
         
 # register new methods with flask
-
 def init_app(app):
     # this tells flask that it needs to call close_db when stopping app
     app.teardown_appcontext(close_db)

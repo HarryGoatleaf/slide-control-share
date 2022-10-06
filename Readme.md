@@ -15,10 +15,14 @@ WIP
 
 We recommend using docker/docker-compose and VSCode with the "Dev Containers" extension.
 
-* open project folder with VSCode
+* open `frontend` or `backend` folder with VSCode
 * select "open folder in container" (configuration is in `.devcontainer`)
-* run the server with `flask --app slide_control_share --debug run`
-* point your browser to http://127.0.0.1:5000
+* for **backend**:
+  * start the server with `python3 run.py`
+  * point your browser to http://127.0.0.1:5000
+* for **frontend**:
+  * start dev server with `npm run dev`
+  * point your browser to http://127.0.0.1:5173
 
 ## Code Structure
 
