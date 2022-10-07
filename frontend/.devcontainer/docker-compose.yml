@@ -3,6 +3,8 @@ services:
   backend:
     build: ../../backend
     # configure app
+    ports:
+      - "5000:5000"
     environment:
       FLASK_SECRET_KEY: good_password
       FLASK_DATABASE: mongodb://root:better_password@mongo:27017

@@ -3,9 +3,6 @@ FROM mcr.microsoft.com/devcontainers/javascript-node:0-16-buster
 # install simple http server for serving static content
 RUN npm install -g http-server
 
-# install vue-cli
-RUN npm install -g @vue/cli
-
 # make the 'app' folder the current working directory
 WORKDIR /app
 

@@ -25,24 +25,3 @@ We recommend using docker/docker-compose and VSCode with the "Dev Containers" ex
   * point your browser to http://127.0.0.1:5173
 
 ## Code Structure
-
-```
-/slide-control-share
-├── Readme.md
-├── docker-compose.yml          # |
-├── Dockerfile                  # | docker files are currently only suitable for debugging
-├── requirements.txt
-├── slide_control_share
-│   ├── __init__.py             # configures app, registers extensions&blueprints
-│   ├── db.py                   # database module
-│   ├── hello.py                # |
-│   ├── presentation.py         # | blueprints
-│   ├── static                  # contains static files like stylesheets
-│   │   └── example.css
-│   └── templates
-│       ├── create.html
-│       ├── hello.html
-│       └── presentation.html
-├── instance                    # app runtime data
-└── slide-control-share-diagram
-```

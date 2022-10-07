@@ -1,6 +1,6 @@
 from flask import Flask, redirect, url_for
 from flask_socketio import SocketIO
-import flask_sijax
+from flask_cors import CORS
 import os
 
 socketio = SocketIO()
@@ -13,24 +13,18 @@ def create_app():
   app.config.from_prefixed_env()
 
   # extensions
-  # sijax
-  sijax = flask_sijax.Sijax()
-  sijax.init_app(app)
   # socketio
   socketio.init_app(app)
+
   
   # register database stuff
   from . import db
   db.init_app(app)
   
   # register blueprints
-  from . import hello, presentation
-  app.register_blueprint(hello.bp)
+  from . import presentation
+  app.register_blueprint(user.bp)
   app.register_blueprint(presentation.bp)
-
-  @app.route('/')
-  def landing_page():
-    return redirect(url_for('presentation.create'))
 
   # ensure the instance folder exists
   try:
@@ -38,6 +32,10 @@ def create_app():
   except OSError:
     pass
 
+  # enable cors
+  CORS(app, origins=['http://127.0.0.1:*'], supports_credentials=True)
+
+
   return app
   
-from . import events
+from . import events, user

@@ -3,9 +3,6 @@ FROM node:lts-alpine
 # install simple http server for serving static content
 RUN npm install -g http-server
 
-# install vue-cli
-RUN npm install -g @vue/cli
-
 # make the 'app' folder the current working directory
 WORKDIR /app
 
@@ -16,10 +13,10 @@ COPY package*.json ./
 RUN npm install
 
 # copy project files and folders to the current working directory (i.e. 'app' folder)
-# COPY . .
+COPY . .
 
 # build app for production with minification
-# RUN npm run build
+RUN npm run build
 
 # EXPOSE 8080
-# CMD [ "http-server", "dist" ]
+CMD [ "http-server", "dist" ]

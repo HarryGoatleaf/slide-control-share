@@ -1,5 +1,5 @@
 Flask
-Flask-Sijax
 flask-socketio
+Flask-Cors
 pymongo
 eventlet
