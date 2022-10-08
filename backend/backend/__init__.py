@@ -35,7 +35,6 @@ def create_app():
   # enable cors
   CORS(app, origins=['http://127.0.0.1:*'], supports_credentials=True)
 
-
   return app
   
 from . import events, user

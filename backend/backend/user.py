@@ -1,6 +1,7 @@
 from flask import Blueprint, g, redirect, session, request, current_app
 from .db import get_db
 from bson.objectid import ObjectId
+from bson.json_util import loads, dumps
 import functools
 
 bp = Blueprint('user', __name__, url_prefix='/api/user')
@@ -38,7 +39,7 @@ def name():
       # log
       current_app.logger.info('Created user «%s»', user['name'])
 
-      return {'status': 'success', 'user': {'name': g.user['name'], 'id': str(g.user['_id'])}}
+      return {'status': 'success', 'user': dumps(g.user)}
     else:
       # TODO: what happens if an already registered user sets a new name? 
       #       this currently cant happen

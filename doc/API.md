@@ -17,7 +17,7 @@ this document contains the format of the backend API messages.
 * `POST:/api/presentation/create`:
   ```json
   POST: {'content': '...'}
-  RESP: {'status': 'success', 'presentation_id': '...'}
+  RESP: {'status': 'success', 'presentation': {...}}
   FAIL: {'status': 'failed', 'message': 'malformed'}
         {'status': 'failed', 'message': 'unknown user'}
   ```

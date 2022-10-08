@@ -2,6 +2,7 @@ from flask import Blueprint, g, redirect, render_template, url_for, session, req
 from .db import get_db
 from .user import name_required
 from bson.objectid import ObjectId
+from bson.json_util import loads, dumps
 from . import socketio
 
 bp = Blueprint('presentation', __name__, url_prefix="/api/presentation")
@@ -44,13 +45,14 @@ def create():
   presentation_id = str(presentations.insert_one(presentation).inserted_id)
   # set users current presentation to the one created
   session['presentation_id'] = presentation_id
+  load_presentation()
 
   # log
   current_app.logger.info('User «%s» created presentation «%s» ', 
     g.user['name'], 
     presentation_id)
 
-  return {'status': 'success', 'presentation_id': presentation_id}
+  return {'status': 'success', 'presentation': dumps(g.presentation)}
 
 @bp.route('/<string:presentation_id>')
 @name_required
@@ -65,7 +67,7 @@ def presentation(presentation_id):
     current_app.logger.info("user already in session")
 
   # return render_template('presentation.html', user = g.user, presentation = g.presentation)
-  return { 'status': 'success', 'presentation': g.presentation }
+  return { 'status': 'success', 'presentation': dumps(g.presentation) }
 
 @bp.route('/<string:presentation_id>/current_slide')
 @name_required

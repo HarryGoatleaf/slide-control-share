@@ -5,30 +5,26 @@ import {backend} from '../backend.js'
 export default {
   data() {
     return {
-      name: undefined
+      store,
+      input_name: ''
     };
   },
   methods: {
     onSubmit(e){
       e.preventDefault();
-      backend.post('/user/name', {username: this.name})
+      backend.post('/user/name', {username: this.input_name})
         .then(res => {
           console.log(res)
-          this.name = res.data.name;
           this.$router.push({path: '/' + this.$route.params.path})
         });
     },
-    getName() {
-      backend.get('/user/name')
-        .then((res) => {
-          if(res.data.status == 'success') {
-            this.$router.push({path: '/' + this.$route.params.path})
-          }
-        })
-        .catch((error) => {
-          console.error(error)
-        });
-    }
+  },
+  created() {
+    this.store.load_user()
+      .then(() => {
+        this.$router.push({path: '/' + this.$route.params.path.join('/')})
+      })
+      .catch()
   }
 }
 </script>
@@ -43,7 +39,7 @@ export default {
 <input
   type="text"
   name="username"
-  v-model="name">
+  v-model="input_name">
 <input type="submit"/>
 </form>
 
