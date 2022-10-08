@@ -1,5 +1,5 @@
 from flask import Blueprint, g, redirect, render_template, url_for, session, request, current_app, abort
-from .db import get_db
+from .db import Presentation,User
 from .user import name_required
 from bson.objectid import ObjectId
 from bson.json_util import loads, dumps
@@ -17,8 +17,7 @@ def load_presentation():
   if presentation_id is None:
     g.presentation = None
   else:
-    presentations = get_db()['presentations']
-    g.presentation = presentations.find_one({"_id": ObjectId(presentation_id)})
+    presentations = Presentation.objects.get(id=ObjectId(presentation_id))
     # TODO: user_id's cant be forged but can it happen that they do not exist in db?
 
 # routes
@@ -30,20 +29,15 @@ def create():
   if not 'content' in new_presentation:
     return {'status': 'failed', 'message': 'malformed'}
 
-  # load database
-  db = get_db()
-  presentations = db['presentations']
-
-  # create presentation object
-  presentation = { 
-    "host": g.user['_id'],
-    "users": [g.user['_id']],
-    "content": new_presentation['content'],
-    "current_slide": 0
-    }
-  # insert presentation in database
-  presentation_id = str(presentations.insert_one(presentation).inserted_id)
+  # crate database object of presentation
+  presentation = Presentation(
+    host = g.user,
+    users = [g.user],
+    content = new_presentation['content'],
+    current_slide = 0,
+    ).save()
   # set users current presentation to the one created
+  presentation_id = str(presentation.id)
   session['presentation_id'] = presentation_id
   load_presentation()
 
@@ -52,14 +46,14 @@ def create():
     g.user['name'], 
     presentation_id)
 
-  return {'status': 'success', 'presentation': dumps(g.presentation)}
+  return {'status': 'success', 'presentation': presentation.to_json()}
 
 @bp.route('/<string:presentation_id>')
 @name_required
 def presentation(presentation_id):
   if g.presentation == None: # case: user joins presentation
     join_presentation(presentation_id)
-  elif str(g.presentation['_id']) == presentation_id: # case: user reloads page
+  elif str(g.presentation.id) == presentation_id: # case: user reloads page
     pass
   else:
     # TODO: what to do if user is already in another session?
@@ -67,7 +61,7 @@ def presentation(presentation_id):
     current_app.logger.info("user already in session")
 
   # return render_template('presentation.html', user = g.user, presentation = g.presentation)
-  return { 'status': 'success', 'presentation': dumps(g.presentation) }
+  return { 'status': 'success', 'presentation': g.presentation.to_json() }
 
 @bp.route('/<string:presentation_id>/current_slide')
 @name_required
@@ -76,7 +70,7 @@ def current_slide(presentation_id, methods =['GET', 'POST']):
     if g.presentation == None:
       return {'status': 'failed', 'message': 'not in a presentation'}
     else:
-      return {'status': 'success', 'current_slide': g.presentation['current_slide']}
+      return {'status': 'success', 'current_slide': g.presentation.current_slide}
 
   elif request.method == 'POST':
     # verify request
@@ -87,28 +81,22 @@ def current_slide(presentation_id, methods =['GET', 'POST']):
     if g.presentation == None:
       return {'status': 'failed', 'message': 'not in a presentation'}
 
-    # load database
-    from . import db
-    db = db.get_db()
-    presentations = db['presentations']
     # change current slide in db
-    presentations.update_one({"_id": ObjectId(presentation_id)}, {'$set': {'current_slide': new_slide}})
+    g.presentation.update_one(set__current_slide=new_slide['new_slide'])
     # broadcast new slide to all clients
     socketio.emit('set_slide', new_slide['new_slide'], to=presentation_id)
 
     # log
-    current_app.logger.info("Set slide to %s", new_slide)
+    current_app.logger.info("Set slide to %s", new_slide['new_slide'])
     return {'status': 'success'}
 
 # helper methods
 def join_presentation(presentation_id):
-  # get presentations from db
-  presentations = get_db()['presentations']
   # fetch requested presentation from database
-  req_pres = presentations.find_one({"_id": ObjectId(presentation_id)})
-  # check if requested presentation exists
-  if req_pres == None:
-    abort(404)
+  try:
+    presentation = Presentation.objects.get(id=ObjectId(presentation_id))
+  except:
+    print("error presentation does not exist")
 
   # add presentation to user session data
   session['presentation_id'] = presentation_id
@@ -116,9 +104,9 @@ def join_presentation(presentation_id):
   # add user to presentation in database
   if not g.user['_id'] in g.presentation['users']: # this might be superfluous
     # add user to presentation in database
-    presentations.update_one({"_id": g.presentation['_id']}, {'$push': {'users': g.user['_id']}})
+    presentation.update_one(push__users=g.user.id)
     # update local data. database query might be unnecesary
-    g.presentation = presentations.find_one({"_id": ObjectId(presentation_id)})
+    g.presentation = Presentation.objects.get(id=ObjectId(presentation_id))
     # TODO: broadcast new user to other users
 
     # log

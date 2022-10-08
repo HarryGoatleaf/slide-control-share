@@ -1,9 +1,0 @@
-HTTP/1.1 200 OK
-Content-Type: application/json
-Content-Length: 101
-Access-Control-Allow-Origin: http://127.0.0.1:5173
-Access-Control-Allow-Credentials: true
-Vary: Origin, Cookie
-Set-Cookie: session=eyJ1c2VyX2lkIjoiNjMzZjc1MDE2YWUxZDNjMzA5ZThiNzA2In0.Yz91AQ.mntD9GttKtSW21Q18OvMaUw8iaQ; HttpOnly; Path=/
-Date: Fri, 07 Oct 2022 00:38:25 GMT
-

@@ -1,7 +1,8 @@
-from flask import Flask, redirect, url_for
+from flask import Flask
 from flask_socketio import SocketIO
 from flask_cors import CORS
 import os
+from mongoengine import connect
 
 socketio = SocketIO()
 
@@ -16,10 +17,8 @@ def create_app():
   # socketio
   socketio.init_app(app)
 
-  
-  # register database stuff
-  from . import db
-  db.init_app(app)
+  # connect database
+  connect(host = app.config['DATABASE'])
   
   # register blueprints
   from . import presentation
