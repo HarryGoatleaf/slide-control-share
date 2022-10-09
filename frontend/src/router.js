@@ -12,11 +12,11 @@ export default createRouter({
       component: Index,
     },
     {
-      path: '/:path(.*)/hello',
+      path: '/:path(.*)*/hello',
       component: Hello,
     },
     {
-      path: '/presentation/:url_presentation_id',
+      path: '/presentation',
       component: Presentation,
     },
     {

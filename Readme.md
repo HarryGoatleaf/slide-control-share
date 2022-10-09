@@ -5,8 +5,7 @@
 ## Design Goals
 
 * no login required
-* fast 💨
-* pretty ✨
+* ...
 
 ## Deploying
 
@@ -26,45 +25,3 @@ We recommend using docker/docker-compose and VSCode with the "Dev Containers" ex
   * point your browser to http://127.0.0.1:5173
 
 ## Code Structure
-```
-├── backend
-│   ├── run.py                      # server launcher script
-│   ├── backend
-│   │   ├── __init__.py             # flask 'app' init stuff
-│   │   ├── db.py                   # database 'schema'
-│   │   ├── events.py               # socketio events
-│   │   ├── presentation.py         # presentation api
-│   │   └── user.py                 # user api
-│   ├── instance                    # folder for temporary data
-│   ├── Dockerfile
-│   └── requirements.txt
-├── doc
-│   ├── API.md
-│   ├── intervace-sketch.svg
-│   └── slide-control-share-diagram
-├── frontend
-│   ├── index.html                  # (boilerplate) page that just contains root
-│   │                               # element of app
-│   ├── public
-│   │   └── favicon.ico
-│   ├── src
-│   │   ├── main.js                 # configures vuejs app and mounts it to to
-│   │   │                           # root app in index.html
-│   │   ├── components              # ┐
-│   │   ├── assets                  # ┴ until now unused
-│   │   ├── App.vue
-│   │   ├── store.js                # application global state singleton
-│   │   ├── backend.js              # singleton for backend http connection
-│   │   ├── router.js               # router info (url routes)
-│   │   └── views
-│   │       ├── Index.vue           # landing page
-│   │       ├── Hello.vue           # requests name from user
-│   │       ├── Create.vue          # create new presentation
-│   │       └── Presentation.vue    # presentation view
-│   ├── Dockerfile
-│   ├── package.json                # ┐
-│   ├── package-lock.json           # ├ project config
-│   └── vite.config.js              # ┘
-├── docker-compose.yml              # docker-compose for whole project
-└── Readme.md                       # this file :)
-```
