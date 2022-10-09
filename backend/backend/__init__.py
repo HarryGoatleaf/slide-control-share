@@ -4,7 +4,7 @@ from flask_cors import CORS
 import os
 from mongoengine import connect
 
-socketio = SocketIO()
+socketio = SocketIO(cors_allowed_origins="*", logger=True, engineio_logger=True)
 
 def create_app():
   app = Flask(__name__)
