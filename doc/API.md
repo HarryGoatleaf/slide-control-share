@@ -8,6 +8,7 @@ this document contains the format of the backend API messages.
   ```json
   POST: {'username': '...'}
   RESP: {'status': 'success', 'user': {...}}
+  FAIL: {'status': 'failed', 'message': 'already registered'}
   ```
 * `GET:/api/name`:
   ```json
@@ -24,7 +25,8 @@ this document contains the format of the backend API messages.
 * `GET:/api/presentation/<presentation_id>`
   ```json
   RESP: {'status': 'success', 'presentation': {...}}
-  FAIL: {'status': 'failed', 'message': unknown user'}
+  FAIL: {'status': 'failed', 'message': 'unknown user'}
+  FAIL: {'status': 'failed', 'message': 'presentation does not exist'}
   ```
 * `POST:/api/presentation/<presentation_id>/current_slide`
   ```json
@@ -34,6 +36,7 @@ this document contains the format of the backend API messages.
   ```json
   RESP: {'status': 'success', 'current_slide': '...'}
   FAIL: {'status': 'failed', 'message': 'not in a presentation'}
+  FAIL: {'status': 'failed', 'message': 'wrong presentation'}
   ```
 
 

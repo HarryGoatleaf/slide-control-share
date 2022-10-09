@@ -1,9 +1,0 @@
-HTTP/1.1 200 OK
-Content-Type: application/json
-Content-Length: 101
-Access-Control-Allow-Origin: *
-Access-Control-Allow-Headers: Origin, Content-Type, X-Auth-Token
-Vary: Cookie
-Set-Cookie: session=eyJ1c2VyX2lkIjoiNjMzZjU3MzhjMjBkOTc5YmVhZjU0MDJkIn0.Yz9XOA.44bAqkEeMjOmpNHMMWD0riHv4HY; HttpOnly; Path=/
-Date: Thu, 06 Oct 2022 22:31:20 GMT
-
