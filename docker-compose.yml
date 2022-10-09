@@ -13,7 +13,7 @@ services:
   frontend:
     build: frontend
     ports:
-      - "80:8080"
+      - "5173:5173"
 
   # database service
   mongo:

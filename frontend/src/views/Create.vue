@@ -14,8 +14,8 @@ export default {
       e.preventDefault();
       backend.post('/presentation/create', {content: this.input_content})
         .then(res => {
-          console.log(res)
-          this.$router.push({path: '/presentation/' + res.data.presentation})
+          this.store.presentation = JSON.parse(res.data.presentation)
+          this.$router.push({path: '/presentation/' + this.store.presentation._id.$oid})
         });
     },
   },

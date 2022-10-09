@@ -11,6 +11,7 @@ export default {
   },
   methods: {
     onSubmit(e){
+      // prevent browser from reloading etc
       e.preventDefault();
       backend.post('/user/name', {username: this.input_name})
         .then(res => {
@@ -22,7 +23,8 @@ export default {
   created() {
     this.store.load_user()
       .then(() => {
-        this.$router.push({path: '/' + this.$route.params.path.join('/')})
+        // if user already is named autoredirect
+        this.$router.push({path: '/' + this.$route.params.path})
       })
       .catch()
   }
