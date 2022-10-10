@@ -2,13 +2,17 @@
 import {store} from '../store.js'
 import {backend} from '../backend.js'
 import { io } from 'socket.io-client'
+import User from '../components/User.vue'
 
 export default {
-
   data() {
     return {
       store,
     };
+  },
+  
+  components: {
+    User
   },
 
   methods: {
@@ -49,7 +53,14 @@ export default {
           
         // this event is emmited by the server if current_slide is updated
         socket.on('set_slide', (new_slide) => {
-          store.presentation.current_slide = new_slide
+          this.store.presentation.current_slide = new_slide
+        });
+        
+        // this event is emmited by the server if users join/leave
+        socket.on('set_users', (new_users) => {
+          var new_presentation = JSON.parse(new_users)
+          console.log(new_presentation)
+          this.store.presentation = new_presentation
         });
         
         socket.on("connect_error", (error) => {
@@ -72,7 +83,10 @@ export default {
     {{store.presentation.current_slide}}
     <button @click="next_slide">Next</button>
     
-    <!-- TODO: display users -->
+    <User 
+      v-for="user in store.presentation.users"
+      :name="user.$oid"
+    />
   </div>
 
 </template>

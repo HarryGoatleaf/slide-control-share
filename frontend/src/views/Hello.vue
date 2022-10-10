@@ -15,7 +15,6 @@ export default {
       e.preventDefault();
       backend.post('/user/name', {username: this.input_name})
         .then(res => {
-          console.log(res)
           this.$router.push({path: '/' + this.$route.params.path})
         });
     },

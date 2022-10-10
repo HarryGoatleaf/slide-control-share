@@ -113,7 +113,11 @@ def join_presentation(presentation_id):
     # add user to presentation in database
     g.presentation.users.append(g.user.id)
     g.presentation.save()
-    # TODO: broadcast new user to other users
+    # TODO: REFACTOR THIS. currently sending whole presentation 
+    # becuase of lack of proper encoding
+    socketio.emit('set_users',
+     g.presentation.to_json(),
+     to=presentation_id)
 
     # log
     current_app.logger.info('Added user «%s» to session «%s»', 
