@@ -47,11 +47,6 @@ export default {
           withCredentials: true
           });
           
-        // this event makes the server add the user to a room (for message broadcasts)
-        socket.on('connect', () => {
-          socket.emit('add_me_to_room')
-        });
-
         // this event is emmited by the server if current_slide is updated
         socket.on('set_slide', (new_slide) => {
           store.presentation.current_slide = new_slide
