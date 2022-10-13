@@ -1,10 +1,11 @@
-from flask import Blueprint, g, redirect, render_template, url_for, session, request, current_app, abort
+from flask import Blueprint, g, redirect, render_template, url_for, session, request, current_app, abort, send_file
 from .db import Presentation,User
 from .user import name_required
 from bson.objectid import ObjectId
 from bson.json_util import loads, dumps
 from . import socketio
 from flask_socketio import leave_room
+import os
 
 bp = Blueprint('presentation', __name__, url_prefix="/api/presentation")
 
@@ -27,19 +28,36 @@ def load_presentation():
 @name_required
 def create():
   # verify request
-  new_presentation = request.get_json()
-  if not 'content' in new_presentation:
+  if not 'content' in request.form:
+    return {'status': 'failed', 'message': 'malformed'}
+  if not 'slides' in request.files:
+    return {'status': 'failed', 'message': 'malformed'}
+  if not allowed_file(request.files['slides'].filename):
     return {'status': 'failed', 'message': 'malformed'}
 
   # crate database object of presentation
   presentation = Presentation(
     host = g.user,
     users = [g.user],
-    content = new_presentation['content'],
+    content = request.form['content'],
     current_slide = 0,
-    ).save()
-  # set users current presentation to the one created
+    )
+  # save slides in DB
+  presentation.slides.put(request.files['slides'], content_type = 'application/pdf')
+  
+  presentation.save()
+
   presentation_id = str(presentation.id)
+
+  # save file on disk
+  # new_slides = request.files['slides']
+  # file_path = os.path.join(current_app.instance_path, presentation_id+'.pdf') 
+  # new_slides.save(file_path)
+  # slide_data = presentation.slides.read()
+  # file_handle = open(file_path, 'wb')
+  # file_handle.write(slide_data)
+
+  # set users current presentation to the one created
   session['presentation_id'] = presentation_id
 
   # log
@@ -96,6 +114,19 @@ def current_slide(presentation_id):
     current_app.logger.info("Set slide to %s", new_slide['new_slide'])
     return {'status': 'success'}
 
+@bp.route('/<string:presentation_id>/slides', methods =['GET'])
+@name_required
+def slides(presentation_id):
+  # TODO: is this nice?
+  if g.presentation == None:
+    return {'status': 'failed', 'message': 'not in a presentation'}
+  if not str(g.presentation.id) == presentation_id:
+    return {'status': 'failed', 'message': 'wrong presentation'}
+  
+  if request.method == 'GET':
+    return send_file(g.presentation.slides, as_attachment=True, mimetype='application/pdf', download_name='slides.pdf')
+
+
 # helper methods
 def join_presentation(presentation_id):
   """ Tries to join <presentation_id> and returns API response JSON """
@@ -145,3 +176,8 @@ def leave_current_presentation():
   current_app.logger.info('Removed user «%s» from session «%s»',
     str(g.user.id),
     str(presentation.id))
+
+def allowed_file(filename):
+    ALLOWED_EXTENSIONS = {'pdf'}
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS

@@ -4,6 +4,7 @@ import {backend} from '../backend.js'
 import { io } from 'socket.io-client'
 import User from '../components/User.vue'
 
+
 export default {
   data() {
     return {
@@ -26,7 +27,7 @@ export default {
       store.presentation.current_slide--
       backend.post('/presentation/' + this.store.presentation._id.$oid + '/current_slide', 
         {new_slide: store.presentation.current_slide})
-    }
+    },
   },
 
   created() {
@@ -44,6 +45,7 @@ export default {
     // load presentation from url id
     backend.get('/presentation/' + this.$route.params.url_presentation_id)
       .then(res => {
+        console.log(res)
         this.store.presentation = JSON.parse(res.data.presentation)
 
         // init socket after fetching url to guaratee that session (cookie) contains presentation_id
@@ -69,6 +71,56 @@ export default {
       })
       .catch(res => {
       })
+    },
+
+    mounted() {
+      // somehow pdfjs has to be imported in this funky way
+      import("pdfjs-dist/legacy/build/pdf.js")
+      .then((pdfjsLib) => {
+        // TODO: this could break
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+          "https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js";
+
+        // presentation slides url
+        var url = 'http://127.0.0.1:5000/api/presentation/'
+          + this.$route.params.url_presentation_id 
+          + '/slides';
+
+        // Asynchronous download of PDF
+        var loadingTask = pdfjsLib.getDocument({url: url,withCredentials: true});
+        loadingTask.promise.then((pdf) => {
+          console.log('PDF loaded');
+          this.store.slides = pdf
+          
+          // fetch page
+          var pageNumber = 1;
+          pdf.getPage(pageNumber).then((page) => {
+            console.log('Page loaded');
+            
+            var scale = 1.5;
+            var viewport = page.getViewport({scale: scale});
+
+            // Prepare canvas using PDF page dimensions
+            var canvas = document.getElementById('the-canvas');
+            var context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            // Render PDF page into canvas context
+            var renderContext = {
+              canvasContext: context,
+              viewport: viewport
+            };
+            var renderTask = page.render(renderContext);
+            renderTask.promise.then(function () {
+              console.log('Page rendered');
+            });
+          });
+        }, function (reason) {
+          // PDF loading error
+          console.error(reason);
+        });
+      });
   },
 }
 </script>
@@ -87,6 +139,7 @@ export default {
       v-for="user in store.presentation.users"
       :name="user.$oid"
     />
+    <canvas id="the-canvas"></canvas>
   </div>
 
 </template>

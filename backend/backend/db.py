@@ -6,5 +6,6 @@ class User(Document):
 class Presentation(Document):
     host = ReferenceField(User, required=True)
     users  = ListField(ReferenceField(User), required=True)
+    slides = FileField()
     content = StringField(max_length=1000, required=True)
     current_slide = IntField(required=True)

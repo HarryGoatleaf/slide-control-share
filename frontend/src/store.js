@@ -5,6 +5,7 @@ import {backend} from './backend.js'
 export const store = reactive({
   user: undefined,
   presentation: undefined,
+  slides: undefined,
 
   load_user() {
     return new Promise((resolve, reject) => {

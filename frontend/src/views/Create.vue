@@ -6,17 +6,40 @@ export default {
   data() {
     return {
       store,
-      input_content: ''
+      input_content: '',
+      input_slides: undefined,
     };
   },
   methods: {
     onSubmit(e){
       e.preventDefault();
-      backend.post('/presentation/create', {content: this.input_content})
-        .then(res => {
-          this.store.presentation = JSON.parse(res.data.presentation)
-          this.$router.push({path: '/presentation/' + this.store.presentation._id.$oid})
-        });
+      // load file
+      var reader = new FileReader()
+      reader.readAsDataURL(this.input_slides)
+      reader.onload = () => {
+
+        // create presentation creation message object
+        // var message = {content: , slides: this.input_slides}
+        const form = new FormData();
+        form.append('content', this.input_content)
+        form.append('slides', this.input_slides)
+
+        backend.post('/presentation/create', form, {headers: {'Content-Type': 'multipart/form-data'}})
+          .then(res => {
+            console.log(res)
+            this.store.presentation = JSON.parse(res.data.presentation)
+            // navigate to newly created presentation
+            this.$router.push({path: '/presentation/' + this.store.presentation._id.$oid})
+          })
+          .catch((error) => {
+            console.log(error)
+          });
+        
+      }
+      reader.onerror = () => {
+        console.log(reader.error)
+      }
+
     },
   },
   created() {
@@ -37,12 +60,25 @@ export default {
 <h1>Create</h1>
 
 <form @submit="onSubmit">
+
 <label for="content">Content</label>
 <br>
 <input
   type="text"
   name="content"
   v-model="input_content">
+  
+<br>
+
+<label for="slides">Slides: </label>
+<br>
+<input 
+  type="file" 
+  name="slides"
+  @change="event => input_slides = event.target.files[0]">
+  
+<br>
+  
 <input type="submit"/>
 </form>
 
