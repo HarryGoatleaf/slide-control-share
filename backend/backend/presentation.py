@@ -40,7 +40,7 @@ def create():
     host = g.user,
     users = [g.user],
     content = request.form['content'],
-    current_slide = 0,
+    current_slide = 1,
     )
   # save slides in DB
   presentation.slides.put(request.files['slides'], content_type = 'application/pdf')

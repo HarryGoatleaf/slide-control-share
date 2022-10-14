@@ -3,6 +3,39 @@ import {store} from '../store.js'
 import {backend} from '../backend.js'
 import { io } from 'socket.io-client'
 import User from '../components/User.vue'
+const pdfjsLib = await import('pdfjs-dist/build/pdf') 
+pdfjsLib.GlobalWorkerOptions.workerSrc = 
+  'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
+  
+var slides = undefined;
+
+function set_slide(slide_num) {
+  if(slides === undefined) return
+
+  slides.getPage(slide_num).then((page) => {
+    console.log('Page loaded');
+    
+    var scale = 2;
+    var viewport = page.getViewport({scale: scale});
+
+    // Prepare canvas using PDF page dimensions
+    var canvas = document.getElementById('the-canvas');
+    var context = canvas.getContext('2d');
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+
+    // Render PDF page into canvas context
+    var renderContext = {
+      canvasContext: context,
+      viewport: viewport
+    };
+    var renderTask = page.render(renderContext);
+    renderTask.promise.then(function () {
+      console.log('Page rendered');
+    });
+
+  });
+}
 
 
 export default {
@@ -21,12 +54,14 @@ export default {
       store.presentation.current_slide++
       backend.post('/presentation/' + this.store.presentation._id.$oid + '/current_slide', 
         {new_slide: store.presentation.current_slide})
+      set_slide(store.presentation.current_slide)
     },
 
     prev_slide() {
       store.presentation.current_slide--
       backend.post('/presentation/' + this.store.presentation._id.$oid + '/current_slide', 
         {new_slide: store.presentation.current_slide})
+      set_slide(store.presentation.current_slide)
     },
   },
 
@@ -56,6 +91,7 @@ export default {
         // this event is emmited by the server if current_slide is updated
         socket.on('set_slide', (new_slide) => {
           this.store.presentation.current_slide = new_slide
+          set_slide(store.presentation.current_slide)
         });
         
         // this event is emmited by the server if users join/leave
@@ -75,11 +111,9 @@ export default {
 
     mounted() {
       // somehow pdfjs has to be imported in this funky way
-      import("pdfjs-dist/legacy/build/pdf.js")
-      .then((pdfjsLib) => {
+      // import("pdfjs-dist/legacy/build/pdf.js")
+      // .then((pdfjsLib) => {
         // TODO: this could break
-        pdfjsLib.GlobalWorkerOptions.workerSrc =
-          "https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js";
 
         // presentation slides url
         var url = 'http://127.0.0.1:5000/api/presentation/'
@@ -88,39 +122,15 @@ export default {
 
         // Asynchronous download of PDF
         var loadingTask = pdfjsLib.getDocument({url: url,withCredentials: true});
-        loadingTask.promise.then((pdf) => {
+        loadingTask.promise.then(pdf => {
           console.log('PDF loaded');
-          this.store.slides = pdf
-          
-          // fetch page
-          var pageNumber = 1;
-          pdf.getPage(pageNumber).then((page) => {
-            console.log('Page loaded');
-            
-            var scale = 1.5;
-            var viewport = page.getViewport({scale: scale});
-
-            // Prepare canvas using PDF page dimensions
-            var canvas = document.getElementById('the-canvas');
-            var context = canvas.getContext('2d');
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-
-            // Render PDF page into canvas context
-            var renderContext = {
-              canvasContext: context,
-              viewport: viewport
-            };
-            var renderTask = page.render(renderContext);
-            renderTask.promise.then(function () {
-              console.log('Page rendered');
-            });
-          });
+          slides = pdf
+          set_slide(store.presentation.current_slide)
         }, function (reason) {
           // PDF loading error
           console.error(reason);
         });
-      });
+      // });
   },
 }
 </script>
