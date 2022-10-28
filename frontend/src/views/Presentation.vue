@@ -3,12 +3,14 @@ import {store} from '../store.js'
 import {backend} from '../backend.js'
 import { io } from 'socket.io-client'
 import User from '../components/User.vue'
+// TODO: why is await necessary here?
 const pdfjsLib = await import('pdfjs-dist/build/pdf') 
+// TODO: this could break
 pdfjsLib.GlobalWorkerOptions.workerSrc = 
   'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
   
+// TODO: is this ugly?
 var slides = undefined;
-
 function set_slide(slide_num) {
   if(slides === undefined) return
 
@@ -30,10 +32,9 @@ function set_slide(slide_num) {
       viewport: viewport
     };
     var renderTask = page.render(renderContext);
-    renderTask.promise.then(function () {
+    renderTask.promise.then(() => {
       console.log('Page rendered');
     });
-
   });
 }
 
@@ -52,14 +53,14 @@ export default {
   methods: {
     next_slide() {
       store.presentation.current_slide++
-      backend.post('/presentation/' + this.store.presentation._id.$oid + '/current_slide', 
+      backend.post('/presentation/' + this.store.presentation.id + '/current_slide', 
         {new_slide: store.presentation.current_slide})
       set_slide(store.presentation.current_slide)
     },
 
     prev_slide() {
       store.presentation.current_slide--
-      backend.post('/presentation/' + this.store.presentation._id.$oid + '/current_slide', 
+      backend.post('/presentation/' + this.store.presentation.id + '/current_slide', 
         {new_slide: store.presentation.current_slide})
       set_slide(store.presentation.current_slide)
     },
@@ -68,69 +69,61 @@ export default {
   created() {
     // redirect if user does not exist
     this.store.load_user()
-      .then(() => {
-
-      })
       .catch((msg) => {
         if (msg == 'unknown user') {
           this.$router.push(this.$route.fullPath + '/hello')
         }
       })
-    
+
     // load presentation from url id
-    backend.get('/presentation/' + this.$route.params.url_presentation_id)
-      .then(res => {
-        console.log(res)
-        this.store.presentation = JSON.parse(res.data.presentation)
+    // backend.get('/presentation/' + this.$route.params.url_presentation_id)
+    this.store.get_presentation(this.$route.params.url_presentation_id)
+      .then(presi => {
+        console.log(presi)
 
         // init socket after fetching url to guaratee that session (cookie) contains presentation_id
         const socket = io("http://127.0.0.1:5000", {
           withCredentials: true
           });
-          
+
         // this event is emmited by the server if current_slide is updated
         socket.on('set_slide', (new_slide) => {
-          this.store.presentation.current_slide = new_slide
-          set_slide(store.presentation.current_slide)
+          if(this.store.presentation.current_slide != new_slide) {
+            this.store.presentation.current_slide = new_slide
+            set_slide(store.presentation.current_slide)
+          }
         });
-        
+
         // this event is emmited by the server if users join/leave
-        socket.on('set_users', (new_users) => {
-          var new_presentation = JSON.parse(new_users)
-          console.log(new_presentation)
+        socket.on('set_users', (new_presentation) => {
           this.store.presentation = new_presentation
         });
-        
+
         socket.on("connect_error", (error) => {
           console.log(error)
         });
       })
       .catch(res => {
+        console.log(res)
       })
-    },
+  },
 
-    mounted() {
-      // somehow pdfjs has to be imported in this funky way
-      // import("pdfjs-dist/legacy/build/pdf.js")
-      // .then((pdfjsLib) => {
-        // TODO: this could break
+  mounted() {
+    // presentation slides url
+    var slide_url = 'http://127.0.0.1:5000/api/presentation/'
+      + this.$route.params.url_presentation_id 
+      + '/slides';
 
-        // presentation slides url
-        var url = 'http://127.0.0.1:5000/api/presentation/'
-          + this.$route.params.url_presentation_id 
-          + '/slides';
-
-        // Asynchronous download of PDF
-        var loadingTask = pdfjsLib.getDocument({url: url,withCredentials: true});
-        loadingTask.promise.then(pdf => {
-          console.log('PDF loaded');
-          slides = pdf
-          set_slide(store.presentation.current_slide)
-        }, function (reason) {
-          // PDF loading error
-          console.error(reason);
-        });
-      // });
+    // Asynchronous download of PDF
+    var loadingTask = pdfjsLib.getDocument({url: slide_url,withCredentials: true});
+    loadingTask.promise.then(pdf => {
+      console.log('PDF loaded');
+      slides = pdf
+      set_slide(store.presentation.current_slide)
+    }, function (reason) {
+      // PDF loading error
+      console.error(reason);
+    });
   },
 }
 </script>
@@ -147,11 +140,11 @@ export default {
     
     <User 
       v-for="user in store.presentation.users"
-      :name="user.$oid"
+      :name="user.name"
+      :id="user.id"
     />
     <canvas id="the-canvas"></canvas>
   </div>
-
 </template>
 
 <style>

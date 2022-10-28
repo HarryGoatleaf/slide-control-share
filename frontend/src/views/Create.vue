@@ -10,6 +10,7 @@ export default {
       input_slides: undefined,
     };
   },
+
   methods: {
     onSubmit(e){
       e.preventDefault();
@@ -27,9 +28,9 @@ export default {
         backend.post('/presentation/create', form, {headers: {'Content-Type': 'multipart/form-data'}})
           .then(res => {
             console.log(res)
-            this.store.presentation = JSON.parse(res.data.presentation)
+            this.store.presentation = res.data.presentation
             // navigate to newly created presentation
-            this.$router.push({path: '/presentation/' + this.store.presentation._id.$oid})
+            this.$router.push({path: '/presentation/' + this.store.presentation.id})
           })
           .catch((error) => {
             console.log(error)
@@ -42,7 +43,9 @@ export default {
 
     },
   },
+
   created() {
+    // redirect to hello page if user is unknown to server
     this.store.load_user()
       .then(() => {
       })

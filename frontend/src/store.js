@@ -27,10 +27,11 @@ export const store = reactive({
         });
     });
   },
+
   get_presentation(presentation_id) {
     return new Promise((resolve, reject) => {
       // if presentation already loaded immediately resolve
-      if(this.presentation !== undefined) resolve(this.presentation)
+      // if(this.presentation !== undefined) resolve(this.presentation)
       // otherwise fetch user data from backend
       backend.get('/presentation/' + presentation_id)
         .then((res) => {

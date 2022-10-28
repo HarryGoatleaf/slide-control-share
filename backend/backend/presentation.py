@@ -35,7 +35,7 @@ def create():
   if not allowed_file(request.files['slides'].filename):
     return {'status': 'failed', 'message': 'malformed'}
 
-  # crate database object of presentation
+  # create database object of presentation
   presentation = Presentation(
     host = g.user,
     users = [g.user],
@@ -44,28 +44,18 @@ def create():
     )
   # save slides in DB
   presentation.slides.put(request.files['slides'], content_type = 'application/pdf')
-  
   presentation.save()
 
+  # set users current presentation id to the one created
   presentation_id = str(presentation.id)
-
-  # save file on disk
-  # new_slides = request.files['slides']
-  # file_path = os.path.join(current_app.instance_path, presentation_id+'.pdf') 
-  # new_slides.save(file_path)
-  # slide_data = presentation.slides.read()
-  # file_handle = open(file_path, 'wb')
-  # file_handle.write(slide_data)
-
-  # set users current presentation to the one created
   session['presentation_id'] = presentation_id
 
   # log
   current_app.logger.info('User «%s» created presentation «%s» ', 
-    g.user['name'], 
-    presentation_id)
+    g.user.encode(), 
+    presentation.encode())
 
-  return {'status': 'success', 'presentation': presentation.to_json()}
+  return {'status': 'success', 'presentation': presentation.encode()}
 
 @bp.route('/<string:presentation_id>')
 @name_required
@@ -76,12 +66,15 @@ def presentation(presentation_id):
 
   # case: user reloads page
   elif str(g.presentation.id) == presentation_id: 
-    return { 'status': 'success', 'presentation': g.presentation.to_json() }
+    return { 'status': 'success', 'presentation': g.presentation.encode() }
 
   # case: user is already in another session
   else:
     # TODO: what to do if user is already in another session?
     #       currently: join new session
+    current_app.logger.info("Moving user from presentation «%s» to «%s»", 
+      str(g.presentation.id), 
+      presentation_id)
     leave_current_presentation()
     return join_presentation(presentation_id)
 
@@ -140,14 +133,14 @@ def join_presentation(presentation_id):
   session['presentation_id'] = presentation_id
   load_presentation()
   # add user to presentation in database
-  if not g.user.id in g.presentation.users: # this might be superfluous
+  if not g.user in g.presentation.users: # this might be superfluous
     # add user to presentation in database
-    g.presentation.users.append(g.user.id)
+    g.presentation.users.append(g.user)
     g.presentation.save()
     # TODO: REFACTOR THIS. currently sending whole presentation 
     # becuase of lack of proper encoding
     socketio.emit('set_users',
-     g.presentation.to_json(),
+     g.presentation.encode(),
      to=presentation_id)
 
     # log
@@ -155,27 +148,31 @@ def join_presentation(presentation_id):
       str(g.user.name),
       str(g.presentation.id))
 
-  return { 'status': 'success', 'presentation': g.presentation.to_json() }
+  return { 'status': 'success', 'presentation': g.presentation.encode() }
     
 def leave_current_presentation():
   """ Leaves the presentation saved in the session cookie """
   if g.presentation == None:
     return
 
-  # remove user from db
-  g.presentation.users.remove(g.user.id)
+  # remove user from db presentation object
+  g.presentation.update(pull__users=g.user)
   g.presentation.save()
-  # remove presentation from session
-  session['presentation_id'] = None
-  
-  # TODO: broadcast leave to other users
+
   # leave presentation broadcast room
   # TODO: should we loave the broadcast room here?
-  # leave_room(presentation_id)
+  # NOTE: broadcast rooms are automatically left on disconnect.
+  #       because the client connection gets started in Presentation.vue
+  #       the room should automatically be left when changing presentations.
+  # leave_room(str(g.presentation.id))
+  # TODO: broadcast leave to other users
+
+  # remove presentation from session
+  session['presentation_id'] = None
 
   current_app.logger.info('Removed user «%s» from session «%s»',
     str(g.user.id),
-    str(presentation.id))
+    str(g.presentation.id))
 
 def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'pdf'}

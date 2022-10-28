@@ -19,13 +19,22 @@ def load_user():
     g.user = User.objects.get(id=ObjectId(user_id))
     # TODO: user_id's in cookies can't be forged but can it happen that they do not exist in db?
 
+def name_required(view):
+  @functools.wraps(view)
+  def wrapped_view(**kwargs):
+    if g.user is None:
+      return {'status': 'failed', 'message': 'unknown user'}
+    return view(**kwargs)
+  return wrapped_view
+
+# routes
 @bp.route('/name', methods = ['GET', 'POST'])
 def name():
   if request.method == 'GET':
     if g.user == None:
       return {'status': 'failed', 'message': 'unknown user'}
     else:
-      return {'status': 'success', 'user': g.user.to_json()}
+      return {'status': 'success', 'user': g.user.encode()}
 
   elif request.method == 'POST':
     if g.user == None:
@@ -39,18 +48,10 @@ def name():
       session['user_id'] = str(user.id)
       load_user()
       # log
-      current_app.logger.info('Created user «%s»', str(user.name))
+      current_app.logger.info('Created user «%s»', user.encode())
 
-      return {'status': 'success', 'user': user.to_json()}
+      return {'status': 'success', 'user': user.encode()}
     else:
       # TODO: what happens if an already registered user sets a new name? 
       #       this currently cant happen
       return {'status': 'failed', 'message': 'already registered'}
-      
-def name_required(view):
-  @functools.wraps(view)
-  def wrapped_view(**kwargs):
-    if g.user is None:
-      return {'status': 'failed', 'message': 'unknown user'}
-    return view(**kwargs)
-  return wrapped_view
