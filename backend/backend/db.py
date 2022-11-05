@@ -10,6 +10,7 @@ class Presentation(Document):
     host = ReferenceField(User, required=True)
     users  = ListField(ReferenceField(User), required=False)
     slides = FileField()
+    num_slides = IntField(required=True)
     current_slide = IntField(required=True)
     
     def encode(self):
@@ -18,5 +19,6 @@ class Presentation(Document):
             'id': str(self.id),
             'host': self.host.encode(),
             'users': [u.encode() for u in self.users],
+            'num_slides': self.num_slides,
             'current_slide': self.current_slide,
         }

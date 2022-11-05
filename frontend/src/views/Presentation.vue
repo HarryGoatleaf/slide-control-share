@@ -52,6 +52,9 @@ export default {
 
   methods: {
     next_slide() {
+      // do nothing if on last page
+      if (store.presentation.current_slide >= store.presentation.num_slides) {return}
+
       store.presentation.current_slide++
       backend.post('/presentation/' + this.store.presentation.id + '/current_slide', 
         {new_slide: store.presentation.current_slide})
@@ -59,6 +62,9 @@ export default {
     },
 
     prev_slide() {
+      // do nothing if on first page
+      if (store.presentation.current_slide <= 1) {return}
+      
       store.presentation.current_slide--
       backend.post('/presentation/' + this.store.presentation.id + '/current_slide', 
         {new_slide: store.presentation.current_slide})
@@ -88,6 +94,8 @@ export default {
 
         // this event is emmited by the server if current_slide is updated
         socket.on('set_slide', (new_slide) => {
+          // only call set_slide when slide counter changes.
+          // if set_slide is called while another invocation of set_slide is unfinished we get bugs.
           if(this.store.presentation.current_slide != new_slide) {
             this.store.presentation.current_slide = new_slide
             set_slide(store.presentation.current_slide)
@@ -114,7 +122,7 @@ export default {
       + this.$route.params.url_presentation_id 
       + '/slides';
 
-    // Asynchronous download of PDF
+    // asynchronous download of PDF
     var loadingTask = pdfjsLib.getDocument({url: slide_url,withCredentials: true});
     loadingTask.promise.then(pdf => {
       console.log('PDF loaded');
@@ -132,9 +140,19 @@ export default {
   <h1>Presentation</h1>
   <p v-if="store.user?.name !== undefined"> Username: {{store.user.name}} </p>
   <div v-if="store.presentation !== undefined">
-    <button @click="prev_slide">Prev</button>
+    <button 
+    @click="prev_slide" 
+    :disabled="store.presentation.current_slide<=1">
+      Prev
+    </button>
+
     {{store.presentation.current_slide}}
-    <button @click="next_slide">Next</button>
+
+    <button 
+    @click="next_slide" 
+    :disabled="store.presentation.current_slide >= store.presentation.num_slides">
+      Next
+    </button>
     
     <User 
       v-for="user in store.presentation.users"

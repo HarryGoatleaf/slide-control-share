@@ -6,6 +6,9 @@ from bson.json_util import loads, dumps
 from . import socketio
 from flask_socketio import leave_room
 import os
+from PyPDF2 import PdfReader
+import io
+
 
 bp = Blueprint('presentation', __name__, url_prefix="/api/presentation")
 
@@ -32,15 +35,24 @@ def create():
     return {'status': 'failed', 'message': 'malformed'}
   if not allowed_file(request.files['slides'].filename):
     return {'status': 'failed', 'message': 'malformed'}
+  # read the pdf into memory so we can read it multiple times
+  # otherwise the buffer is empty after creating PdfReader
+  # TODO: maybe there is a better way to do this
+  file = request.files['slides'].read()
+  try:
+    pdf = PdfReader(io.BytesIO(file))
+  except Exception as e:
+    return {'status': 'failed', 'message': 'malformed'}
 
   # create database object of presentation
   presentation = Presentation(
     host = g.user,
     users = [g.user],
     current_slide = 1,
+    num_slides = len(pdf.pages),
     )
   # save slides in DB
-  presentation.slides.put(request.files['slides'], content_type = 'application/pdf')
+  presentation.slides.put(file, content_type = 'application/pdf')
   presentation.save()
 
   # set users current presentation id to the one created
@@ -90,18 +102,21 @@ def current_slide(presentation_id):
 
   elif request.method == 'POST':
     # verify request
-    new_slide = request.get_json()
-    if not 'new_slide' in new_slide:
+    msg = request.get_json()
+    new_slide = msg.get('new_slide')
+    if new_slide==None:
+      return {'status': 'failed', 'message': 'malformed'}
+    if new_slide < 1 or g.presentation.num_slides < new_slide:
       return {'status': 'failed', 'message': 'malformed'}
 
     # change current slide in db
-    g.presentation.current_slide = new_slide['new_slide']
+    g.presentation.current_slide = new_slide
     g.presentation.save()
     # broadcast new slide to all clients in presentation group
-    socketio.emit('set_slide', new_slide['new_slide'], to=presentation_id)
+    socketio.emit('set_slide', new_slide, to=presentation_id)
 
     # log
-    current_app.logger.info("Set slide to %s", new_slide['new_slide'])
+    current_app.logger.info("Set slide to %s", new_slide)
     return {'status': 'success'}
 
 @bp.route('/<string:presentation_id>/slides', methods =['GET'])
