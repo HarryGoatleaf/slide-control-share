@@ -6,7 +6,6 @@ export default {
   data() {
     return {
       store,
-      input_content: '',
       input_slides: undefined,
     };
   },
@@ -22,7 +21,6 @@ export default {
         // create presentation creation message object
         // var message = {content: , slides: this.input_slides}
         const form = new FormData();
-        form.append('content', this.input_content)
         form.append('slides', this.input_slides)
 
         backend.post('/presentation/create', form, {headers: {'Content-Type': 'multipart/form-data'}})
@@ -63,15 +61,6 @@ export default {
 <h1>Create</h1>
 
 <form @submit="onSubmit">
-
-<label for="content">Content</label>
-<br>
-<input
-  type="text"
-  name="content"
-  v-model="input_content">
-  
-<br>
 
 <label for="slides">Slides: </label>
 <br>

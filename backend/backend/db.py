@@ -10,7 +10,6 @@ class Presentation(Document):
     host = ReferenceField(User, required=True)
     users  = ListField(ReferenceField(User), required=False)
     slides = FileField()
-    content = StringField(max_length=1000, required=True)
     current_slide = IntField(required=True)
     
     def encode(self):

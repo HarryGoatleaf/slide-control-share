@@ -132,8 +132,6 @@ export default {
   <h1>Presentation</h1>
   <p v-if="store.user?.name !== undefined"> Username: {{store.user.name}} </p>
   <div v-if="store.presentation !== undefined">
-    <p>Content: {{store.presentation.content}} </p> 
-
     <button @click="prev_slide">Prev</button>
     {{store.presentation.current_slide}}
     <button @click="next_slide">Next</button>

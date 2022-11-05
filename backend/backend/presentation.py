@@ -28,8 +28,6 @@ def load_presentation():
 @name_required
 def create():
   # verify request
-  if not 'content' in request.form:
-    return {'status': 'failed', 'message': 'malformed'}
   if not 'slides' in request.files:
     return {'status': 'failed', 'message': 'malformed'}
   if not allowed_file(request.files['slides'].filename):
@@ -39,7 +37,6 @@ def create():
   presentation = Presentation(
     host = g.user,
     users = [g.user],
-    content = request.form['content'],
     current_slide = 1,
     )
   # save slides in DB
