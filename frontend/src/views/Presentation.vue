@@ -17,7 +17,7 @@ function set_slide(slide_num) {
   slides.getPage(slide_num).then((page) => {
     console.log('Page loaded');
     
-    var scale = 2;
+    var scale = 5;
     var viewport = page.getViewport({scale: scale});
 
     // Prepare canvas using PDF page dimensions
@@ -137,32 +137,61 @@ export default {
 </script>
 
 <template>
-  <h1>Presentation</h1>
-  <p v-if="store.user?.name !== undefined"> Username: {{store.user.name}} </p>
-  <div v-if="store.presentation !== undefined">
-    <button 
-    @click="prev_slide" 
-    :disabled="store.presentation.current_slide<=1">
-      Prev
-    </button>
 
-    {{store.presentation.current_slide}}
-
-    <button 
-    @click="next_slide" 
-    :disabled="store.presentation.current_slide >= store.presentation.num_slides">
-      Next
-    </button>
-    
-    <User 
-      v-for="user in store.presentation.users"
-      :name="user.name"
-      :id="user.id"
-    />
+  <div id="presentation">
     <canvas id="the-canvas"></canvas>
+  </div>
+
+  <div id="footer">
+    <div v-if="store.presentation !== undefined">
+      <button 
+      @click="prev_slide" 
+      :disabled="store.presentation.current_slide<=1">
+        Prev
+      </button>
+
+      {{store.presentation.current_slide}}
+
+      <button 
+      @click="next_slide" 
+      :disabled="store.presentation.current_slide >= store.presentation.num_slides">
+        Next
+      </button>
+      
+      <User 
+        v-for="user in store.presentation.users"
+        :name="user.name"
+        :id="user.id"
+      />
+    </div>
   </div>
 </template>
 
-<style>
+<style scoped>
 
+/* 
+css black magic: 
+https://stackoverflow.com/questions/28439310/scale-an-image-to-maximally-fit-available-space-and-center-it
+*/
+
+#presentation {
+  display: block;
+  overflow: hidden;
+  position: relative;
+  text-align: center;
+  height:100%;
+  width: 100%;
+}
+#the-canvas {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  margin: auto;
+  max-height: 100%;
+  max-width: 100%;
+  position: absolute;
+}
+#footer{
+}
 </style>
