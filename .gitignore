@@ -33,3 +33,4 @@ coverage
 *.sw?
 
 backend/backend.egg-info
+backend/.coverage
