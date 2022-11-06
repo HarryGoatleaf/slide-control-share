@@ -60,8 +60,8 @@ def create():
   session['presentation_id'] = presentation_id
 
   # log
-  current_app.logger.info('User «%s» created presentation «%s» ', 
-    g.user.encode(), 
+  current_app.logger.info('User «%s» created presentation «%s» ',
+    g.user.encode(),
     presentation.encode())
 
   return {'status': 'success', 'presentation': presentation.encode()}
@@ -70,19 +70,19 @@ def create():
 @name_required
 def presentation(presentation_id):
   # case: user joins presentation
-  if g.presentation == None: 
+  if g.presentation == None:
     return join_presentation(presentation_id)
 
   # case: user reloads page
-  elif str(g.presentation.id) == presentation_id: 
+  elif str(g.presentation.id) == presentation_id:
     return { 'status': 'success', 'presentation': g.presentation.encode() }
 
   # case: user is already in another session
   else:
     # TODO: what to do if user is already in another session?
     #       currently: join new session
-    current_app.logger.info("Moving user from presentation «%s» to «%s»", 
-      str(g.presentation.id), 
+    current_app.logger.info("Moving user from presentation «%s» to «%s»",
+      str(g.presentation.id),
       presentation_id)
     leave_current_presentation()
     return join_presentation(presentation_id)
@@ -127,7 +127,7 @@ def slides(presentation_id):
     return {'status': 'failed', 'message': 'not in a presentation'}
   if not str(g.presentation.id) == presentation_id:
     return {'status': 'failed', 'message': 'wrong presentation'}
-  
+
   if request.method == 'GET':
     return send_file(g.presentation.slides, as_attachment=True, mimetype='application/pdf', download_name='slides.pdf')
 
@@ -149,19 +149,19 @@ def join_presentation(presentation_id):
     # add user to presentation in database
     g.presentation.users.append(g.user)
     g.presentation.save()
-    # TODO: REFACTOR THIS. currently sending whole presentation 
+    # TODO: REFACTOR THIS. currently sending whole presentation
     # becuase of lack of proper encoding
     socketio.emit('set_users',
      g.presentation.encode(),
      to=presentation_id)
 
     # log
-    current_app.logger.info('Added user «%s» to session «%s»', 
+    current_app.logger.info('Added user «%s» to session «%s»',
       str(g.user.name),
       str(g.presentation.id))
 
   return { 'status': 'success', 'presentation': g.presentation.encode() }
-    
+
 def leave_current_presentation():
   """ Leaves the presentation saved in the session cookie """
   if g.presentation == None:

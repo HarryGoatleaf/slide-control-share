@@ -5,3 +5,5 @@ pymongo
 eventlet
 mongoengine
 PyPDF2
+pytest
+coverage

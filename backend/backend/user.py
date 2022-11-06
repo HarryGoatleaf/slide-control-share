@@ -28,30 +28,31 @@ def name_required(view):
   return wrapped_view
 
 # routes
-@bp.route('/name', methods = ['GET', 'POST'])
-def name():
-  if request.method == 'GET':
-    if g.user == None:
-      return {'status': 'failed', 'message': 'unknown user'}
-    else:
-      return {'status': 'success', 'user': g.user.encode()}
+@bp.route('/name', methods = ['GET'])
+def get_name():
+  if g.user == None:
+    return {'status': 'failed', 'message': 'unknown user'}
+  else:
+    return {'status': 'success', 'user': g.user.encode()}
 
-  elif request.method == 'POST':
-    if g.user == None:
-      new_user = request.get_json()
-      # validate request
-      if not 'username' in new_user:
-        return {'status': 'failed', 'message': 'malformed'}
-      # save user in DB
-      user = User(name=new_user['username']).save()
-      # load user data into session object in cookie
-      session['user_id'] = str(user.id)
-      load_user()
-      # log
-      current_app.logger.info('Created user «%s»', user.encode())
+# TODO: what about a PUT route?
+@bp.route('/name', methods = ['POST'])
+def set_name():
+  if g.user == None:
+    new_user = request.get_json()
+    # validate request
+    if not 'username' in new_user:
+      return {'status': 'failed', 'message': 'malformed'}
+    # save user in DB
+    user = User(name=new_user['username']).save()
+    # load user data into session object in cookie
+    session['user_id'] = str(user.id)
+    load_user()
+    # log
+    current_app.logger.info('Created user «%s»', user.encode())
 
-      return {'status': 'success', 'user': user.encode()}
-    else:
-      # TODO: what happens if an already registered user sets a new name? 
-      #       this currently cant happen
-      return {'status': 'failed', 'message': 'already registered'}
+    return {'status': 'success', 'user': user.encode()}
+  else:
+    # TODO: what happens if an already registered user sets a new name?
+    #       this currently cant happen
+    return {'status': 'failed', 'message': 'already registered'}

@@ -22,6 +22,7 @@ Presentation = {
   POST: {'username': String}
   RESP: {'status': 'success', 'user': User}
   FAIL: {'status': 'failed', 'message': 'already registered'}
+  FAIL: {'status': 'failed', 'message': 'malformed user'}
   ```
 * `GET:/api/name`:
   ```json
