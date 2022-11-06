@@ -26,10 +26,10 @@ def create_app():
   app.register_blueprint(presentation.bp)
 
   # ensure the instance folder exists
-  try:
-    os.makedirs(app.instance_path)
-  except OSError:
-    pass
+  #try:
+  #  os.makedirs(app.instance_path)
+  #except OSError:
+  #  pass
 
   # enable cors
   CORS(app, origins=['http://127.0.0.1:*'], supports_credentials=True)
