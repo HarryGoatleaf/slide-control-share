@@ -39,21 +39,21 @@ def test_create_presentation_without_slides(user):
     resp = user.post('/api/presentation/create', data = {})
     data = resp.get_json()
     assert data['status'] == 'failed'
-    assert data['message'] == 'malformed'
-
-def test_create_corrupted_presentation(user):
-    resp = user.post('/api/presentation/create',
-        data={'slides':[(open('./tests/corrupted.pdf', 'rb'),'corrupted.pdf')]})
-    data = resp.get_json()
-    assert data['status'] == 'failed'
-    assert data['message'] == 'malformed'
+    assert data['message'] == 'missing slides'
 
 def test_create_presentation_wrong_filetype(user):
     resp = user.post('/api/presentation/create',
         data={'slides':[(open('./tests/test.pdf', 'rb'),'test.txt')]})
     data = resp.get_json()
     assert data['status'] == 'failed'
-    assert data['message'] == 'malformed'
+    assert data['message'] == 'only pdfs allowed'
+
+def test_create_corrupted_presentation(user):
+    resp = user.post('/api/presentation/create',
+        data={'slides':[(open('./tests/corrupted.pdf', 'rb'),'corrupted.pdf')]})
+    data = resp.get_json()
+    assert data['status'] == 'failed'
+    assert data['message'] == 'corrupt pdf'
 
 def test_join_presentation(presentation, second_user):
     data = second_user.get('/api/presentation/' + str(presentation.presentation_id)).get_json()

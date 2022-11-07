@@ -4,11 +4,11 @@ import {backend} from '../backend.js'
 import { io } from 'socket.io-client'
 import User from '../components/User.vue'
 // TODO: why is await necessary here?
-const pdfjsLib = await import('pdfjs-dist/build/pdf') 
+const pdfjsLib = await import('pdfjs-dist/build/pdf')
 // TODO: this could break
-pdfjsLib.GlobalWorkerOptions.workerSrc = 
+pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
-  
+
 // TODO: is this ugly?
 var slides = undefined;
 function set_slide(slide_num) {
@@ -16,7 +16,7 @@ function set_slide(slide_num) {
 
   slides.getPage(slide_num).then((page) => {
     console.log('Page loaded');
-    
+
     var scale = 5;
     var viewport = page.getViewport({scale: scale});
 
@@ -45,7 +45,7 @@ export default {
       store,
     };
   },
-  
+
   components: {
     User
   },
@@ -56,7 +56,7 @@ export default {
       if (store.presentation.current_slide >= store.presentation.num_slides) {return}
 
       store.presentation.current_slide++
-      backend.post('/presentation/' + this.store.presentation.id + '/current_slide', 
+      backend.post('/presentation/' + this.store.presentation.id + '/current_slide',
         {new_slide: store.presentation.current_slide})
       set_slide(store.presentation.current_slide)
     },
@@ -64,9 +64,9 @@ export default {
     prev_slide() {
       // do nothing if on first page
       if (store.presentation.current_slide <= 1) {return}
-      
+
       store.presentation.current_slide--
-      backend.post('/presentation/' + this.store.presentation.id + '/current_slide', 
+      backend.post('/presentation/' + this.store.presentation.id + '/current_slide',
         {new_slide: store.presentation.current_slide})
       set_slide(store.presentation.current_slide)
     },
@@ -119,7 +119,7 @@ export default {
   mounted() {
     // presentation slides url
     var slide_url = 'http://127.0.0.1:5000/api/presentation/'
-      + this.$route.params.url_presentation_id 
+      + this.$route.params.url_presentation_id
       + '/slides';
 
     // asynchronous download of PDF
@@ -144,21 +144,21 @@ export default {
 
   <div id="footer">
     <div v-if="store.presentation !== undefined">
-      <button 
-      @click="prev_slide" 
+      <button
+      @click="prev_slide"
       :disabled="store.presentation.current_slide<=1">
         Prev
       </button>
 
       {{store.presentation.current_slide}}
 
-      <button 
-      @click="next_slide" 
+      <button
+      @click="next_slide"
       :disabled="store.presentation.current_slide >= store.presentation.num_slides">
         Next
       </button>
-      
-      <User 
+
+      <User
         v-for="user in store.presentation.users"
         :name="user.name"
         :id="user.id"
@@ -169,8 +169,8 @@ export default {
 
 <style scoped>
 
-/* 
-css black magic: 
+/*
+css black magic:
 https://stackoverflow.com/questions/28439310/scale-an-image-to-maximally-fit-available-space-and-center-it
 */
 
@@ -192,6 +192,6 @@ https://stackoverflow.com/questions/28439310/scale-an-image-to-maximally-fit-ava
   max-width: 100%;
   position: absolute;
 }
-#footer{
+#footer {
 }
 </style>

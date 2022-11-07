@@ -1,5 +1,5 @@
 import { reactive } from 'vue'
-import {backend} from './backend.js'
+import { backend } from './backend.js'
 
 // global variables
 export const store = reactive({
@@ -47,6 +47,6 @@ export const store = reactive({
           reject(error)
         });
     });
-    
+
   }
 });

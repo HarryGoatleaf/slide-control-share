@@ -35,8 +35,10 @@ Presentation = {
     * 'slides' in files-field
 
   RESP: {'status': 'success', 'presentation': Presentation}
-  FAIL: {'status': 'failed', 'message': 'malformed'}
-        {'status': 'failed', 'message': 'unknown user'}
+  FAIL: {'status': 'failed', 'message': 'unknown user'}
+        {'status': 'failed', 'message': 'missing slides'}
+        {'status': 'failed', 'message': 'only pdfs allowed'}
+        {'status': 'failed', 'message': 'corrupt pdf'}
   ```
 * `GET:/api/presentation/<presentation_id>`
   ```json

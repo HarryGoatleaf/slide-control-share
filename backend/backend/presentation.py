@@ -9,7 +9,6 @@ import os
 from PyPDF2 import PdfReader
 import io
 
-
 bp = Blueprint('presentation', __name__, url_prefix="/api/presentation")
 
 from flask_cors import CORS
@@ -32,9 +31,9 @@ def load_presentation():
 def create():
   # verify request
   if not 'slides' in request.files:
-    return {'status': 'failed', 'message': 'malformed'}
+    return {'status': 'failed', 'message': 'missing slides'}
   if not allowed_file(request.files['slides'].filename):
-    return {'status': 'failed', 'message': 'malformed'}
+    return {'status': 'failed', 'message': 'only pdfs allowed'}
   # read the pdf into memory so we can read it multiple times
   # otherwise the buffer is empty after creating PdfReader
   # TODO: maybe there is a better way to do this
@@ -42,7 +41,7 @@ def create():
   try:
     pdf = PdfReader(io.BytesIO(file))
   except Exception as e:
-    return {'status': 'failed', 'message': 'malformed'}
+    return {'status': 'failed', 'message': 'corrupt pdf'}
 
   # create database object of presentation
   presentation = Presentation(
