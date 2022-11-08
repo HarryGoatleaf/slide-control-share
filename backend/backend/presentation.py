@@ -130,7 +130,6 @@ def slides(presentation_id):
   if request.method == 'GET':
     return send_file(g.presentation.slides, as_attachment=True, mimetype='application/pdf', download_name='slides.pdf')
 
-
 # helper methods
 def join_presentation(presentation_id):
   """ Tries to join <presentation_id> and returns API response JSON """

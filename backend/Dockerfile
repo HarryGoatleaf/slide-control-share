@@ -17,5 +17,8 @@ RUN pip install --no-cache-dir -r /tmp/requirements.txt
 # doing dependencies and sourcecode separately improves caching
 COPY ./ ./
 
+# install backend package
+RUN pip install -e .
+
 # run backend
 CMD ["python3", "run.py"]
