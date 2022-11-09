@@ -15,8 +15,6 @@ function set_slide(slide_num) {
   if(slides === undefined) return
 
   slides.getPage(slide_num).then((page) => {
-    console.log('Page loaded');
-
     var scale = 5;
     var viewport = page.getViewport({scale: scale});
 
@@ -33,7 +31,7 @@ function set_slide(slide_num) {
     };
     var renderTask = page.render(renderContext);
     renderTask.promise.then(() => {
-      console.log('Page rendered');
+      // console.log('Page rendered');
     });
   });
 }
@@ -43,6 +41,7 @@ export default {
   data() {
     return {
       store,
+      sidebarVisible: false,
     };
   },
 
@@ -73,6 +72,19 @@ export default {
   },
 
   created() {
+    // register hotkeys
+    console.log("register event handler")
+    window.addEventListener('keydown', (e) => {
+      console.log(e.key)
+      if (e.key === ' ') {
+        e.preventDefault();
+        this.next_slide();
+      } else if (e.key === 'Backspace') {
+        e.preventDefault();
+        this.prev_slide();
+      }
+    });
+
     // redirect if user does not exist
     this.store.load_user()
       .catch((msg) => {
@@ -125,7 +137,8 @@ export default {
     // asynchronous download of PDF
     var loadingTask = pdfjsLib.getDocument({url: slide_url,withCredentials: true});
     loadingTask.promise.then(pdf => {
-      console.log('PDF loaded');
+      // console.log('PDF loaded');
+      //pdf.getDestinations().then(labels => {console.log("info: "); console.log(labels);})
       slides = pdf
       set_slide(store.presentation.current_slide)
     }, function (reason) {
@@ -137,32 +150,40 @@ export default {
 </script>
 
 <template>
+  <div id="container">
+    <div id="sidebar">
+      <div id="sidebarContent" v-if="sidebarVisible">
+        <User
+          v-for="user in store.presentation.users"
+          :name="user.name"
+          :id="user.id"
+        />
+      </div>
+    </div>
 
-  <div id="presentation">
-    <canvas id="the-canvas"></canvas>
-  </div>
+    <div id="presentation-and-controls">
+      <div id="presentation">
+        <canvas id="the-canvas"></canvas>
+      </div>
 
-  <div id="footer">
-    <div v-if="store.presentation !== undefined">
-      <button
-      @click="prev_slide"
-      :disabled="store.presentation.current_slide<=1">
-        Prev
-      </button>
+      <div id="controls">
+        <button id="toggle-sidebar" @click="() => {sidebarVisible = !sidebarVisible}">T</button>
+        <button
+        @click="prev_slide"
+        :disabled="store.presentation.current_slide<=1">
+          Prev
+        </button>
 
-      {{store.presentation.current_slide}}
+        <div id="slide-counter">
+          {{store.presentation.current_slide}}
+        </div>
 
-      <button
-      @click="next_slide"
-      :disabled="store.presentation.current_slide >= store.presentation.num_slides">
-        Next
-      </button>
-
-      <User
-        v-for="user in store.presentation.users"
-        :name="user.name"
-        :id="user.id"
-      />
+        <button
+        @click="next_slide"
+        :disabled="store.presentation.current_slide >= store.presentation.num_slides">
+          Next
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -173,6 +194,20 @@ export default {
 css black magic:
 https://stackoverflow.com/questions/28439310/scale-an-image-to-maximally-fit-available-space-and-center-it
 */
+#container {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+}
+
+#presentation-and-controls {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
 
 #presentation {
   display: block;
@@ -192,6 +227,20 @@ https://stackoverflow.com/questions/28439310/scale-an-image-to-maximally-fit-ava
   max-width: 100%;
   position: absolute;
 }
-#footer {
+
+#controls {
+  display: flex;
+  justify-content: center;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+#slide-counter {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+#toggle-sidebar {
+  position: absolute;
+  left: 5px;
 }
 </style>

@@ -6,14 +6,10 @@
 </template>
 
 <style>
-body, html {
+#app, body, html {
   height:100%;
+  width: 100%;
+  margin: 0;
   overflow: hidden;
-}
-#app {
-  height: 100%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
 }
 </style>
