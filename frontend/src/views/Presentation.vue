@@ -11,6 +11,17 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
 
 // TODO: is this ugly?
 var slides = undefined;
+var labels = undefined;
+// TODO: maybe this could become a closure?
+function get_label(i) {
+  if (labels !== undefined) {
+    //
+    return labels[i-1]
+  } else {
+    return i
+  }
+}
+
 function set_slide(slide_num) {
   if(slides === undefined) return
 
@@ -36,12 +47,14 @@ function set_slide(slide_num) {
   });
 }
 
-
 export default {
   data() {
     return {
       store,
       sidebarVisible: false,
+      hotkeys_registered: false,
+      last_label_start: undefined,
+      first_label_end: undefined,
     };
   },
 
@@ -50,40 +63,73 @@ export default {
   },
 
   methods: {
-    next_slide() {
-      // do nothing if on last page
-      if (store.presentation.current_slide >= store.presentation.num_slides) {return}
-
-      store.presentation.current_slide++
-      backend.post('/presentation/' + this.store.presentation.id + '/current_slide',
-        {new_slide: store.presentation.current_slide})
-      set_slide(store.presentation.current_slide)
+    register_hotkeys() {
+      if(this.hotkeys_registered) {return}
+      this.hotkeys_registered = true;
+      // register hotkeys
+      console.log("register event handler")
+      window.addEventListener('keydown', (e) => {
+        if (e.key === ' ') {
+          e.preventDefault();
+          this.next_slide();
+        } else if (e.key === 'Backspace') {
+          e.preventDefault();
+          this.prev_slide();
+        }
+      });
     },
 
-    prev_slide() {
-      // do nothing if on first page
-      if (store.presentation.current_slide <= 1) {return}
+    // this is a higher order function that takes a function f:Int -> Int and
+    // modifies the current slide according to f
+    map_slide(f) {
+      // calc new slide
+      let new_slide = f(store.presentation.current_slide)
 
-      store.presentation.current_slide--
+      // return if slide does not change under f
+      if (new_slide === store.presentation.current_slide) {return}
+      // check slide bounds
+      if (store.presentation.num_slides < new_slide || new_slide < 1) {return}
+
+      // modify local data
+      store.presentation.current_slide = new_slide
+      // send update to server
       backend.post('/presentation/' + this.store.presentation.id + '/current_slide',
-        {new_slide: store.presentation.current_slide})
-      set_slide(store.presentation.current_slide)
+        {new_slide: new_slide})
+      // render new page
+      set_slide(new_slide)
     },
+
+    next_slide() {this.map_slide((i) => {return i+1})},
+    prev_slide() {this.map_slide((i) => {return i-1})},
+    next_label() {this.map_slide((i) => {
+      if(!this.has_next_label(i)) {return i}
+      let res = i
+      while(get_label(res) === get_label(i) && i < this.store.presentation.num_slides) {res++}
+      return res
+    })},
+    prev_label() {this.map_slide((i) => {
+      if(!this.has_next_label(i)) {return i}
+      let res = i
+      while(get_label(res) === labels[i-1] && i > 1) {res--}
+      return res
+    })},
+
+    // helper methods
+    has_next_label(i) {
+      if(i === undefined) {return false}
+      if(this.last_label_start === undefined) {return false}
+      return i < this.last_label_start
+    },
+    has_prev_label(i) {
+      if(i === undefined) {return false}
+      if(this.first_label_end === undefined) {return false}
+      return this.first_label_end < i
+    },
+
   },
 
   created() {
-    // register hotkeys
-    console.log("register event handler")
-    window.addEventListener('keydown', (e) => {
-      console.log(e.key)
-      if (e.key === ' ') {
-        e.preventDefault();
-        this.next_slide();
-      } else if (e.key === 'Backspace') {
-        e.preventDefault();
-        this.prev_slide();
-      }
-    });
+    this.register_hotkeys();
 
     // redirect if user does not exist
     this.store.load_user()
@@ -140,6 +186,31 @@ export default {
       // console.log('PDF loaded');
       //pdf.getDestinations().then(labels => {console.log("info: "); console.log(labels);})
       slides = pdf
+
+      // this resolves with null if the pdf has no labels
+      pdf.getPageLabels().then(lbl => {
+        if(lbl !== null) {
+          labels = lbl;
+          // serch for last label start
+          let last_label = get_label(store.presentation.num_slides)
+          let lls = store.presentation.num_slides;
+          while (get_label(lls-1) === last_label && lls > 1) {
+            lls--
+          }
+          this.last_label_start = lls
+          // search for first label end
+          let first_label = get_label(1)
+          let fle = 1
+          while(get_label(fle-1) === first_label && fle < store.presentation.num_slides) {
+            fle++
+          }
+          this.first_label_end = fle
+        } else {
+          // every slide has its own label
+          this.first_label_end = 1
+          this.last_label_start = store.presentation.num_slides
+        }
+      })
       set_slide(store.presentation.current_slide)
     }, function (reason) {
       // PDF loading error
@@ -168,6 +239,12 @@ export default {
 
       <div id="controls">
         <button id="toggle-sidebar" @click="() => {sidebarVisible = !sidebarVisible}">T</button>
+
+        <button
+        @click="prev_label"
+        :disabled="!has_prev_label(store.presentation?.current_slide)">
+          «
+        </button>
         <button
         @click="prev_slide"
         :disabled="store.presentation.current_slide<=1">
@@ -182,6 +259,11 @@ export default {
         @click="next_slide"
         :disabled="store.presentation.current_slide >= store.presentation.num_slides">
           Next
+        </button>
+        <button
+        @click="next_label"
+        :disabled="!has_next_label(store.presentation?.current_slide)">
+          »
         </button>
       </div>
     </div>
