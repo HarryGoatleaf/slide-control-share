@@ -47,6 +47,5 @@ export const store = reactive({
           reject(error)
         });
     });
-
   }
 });
