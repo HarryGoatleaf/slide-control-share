@@ -32,19 +32,34 @@ export default {
 
 <template>
 
-<h1>Hello!</h1>
 
-<form @submit="onSubmit">
-<label for="username">Name</label>
-<br>
-<input
-  type="text"
-  name="username"
-  v-model="input_name">
-<input type="submit"/>
-</form>
+<div id="wrapper">
+  <div id="content">
+    <h1>Hello!</h1>
+    <form @submit="onSubmit" id="form">
+    <input
+      type="text"
+      name="username"
+      placeholder="name"
+      autofocus
+      v-model="input_name">
+    <input type="submit" value="go!"/>
+    </form>
+  </div>
+</div>
 
 </template>
 
 <style scoped>
+#wrapper {
+  display: flex;
+  height: 100%;
+  flex-direction: row;
+  justify-content: center;
+  padding-top: 20%;
+}
+
+h1 {
+  text-align: center;
+}
 </style>
