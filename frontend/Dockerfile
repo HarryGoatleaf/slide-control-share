@@ -12,12 +12,22 @@ COPY package*.json ./
 # install project dependencies
 RUN npm install
 
-# copy project files and folders to the current working directory (i.e. 'app' folder)
+# copy project files and folders to the current working directory 
+# (i.e. 'app' folder)
 COPY . .
 
 # build app for production with minification
-# RUN npm run build
+RUN npm run build
+
+################################################################################
+#############                STAGE 2                          ##################
+################################################################################
+
+FROM nginx
+
+COPY --from=0 /app/dist /var/www/slide-control-share
+COPY ./nginx.conf /etc/nginx/conf.d/vue.conf
 
 # EXPOSE 8080
 # CMD [ "http-server", "dist" ]
-CMD ["npm", "run", "dev", "--", "--host"]
+# CMD ["npm", "run", "dev", "--", "--host"]
