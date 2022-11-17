@@ -1,8 +1,45 @@
 import {ref} from 'vue'
-const pdfjsLib = await import('pdfjs-dist/build/pdf')
+// import * as pdfjsLib from 'pdfjs-dist/webpack';
+const pdfjsLib = await import('pdfjs-dist');
+
 // TODO: this could break
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
+
+export function load_slides(slide_url) {
+  return new Promise((resolve, reject) => {
+    // asynchronous download of PDF
+    var loadingTask = pdfjsLib.getDocument({url: slide_url,withCredentials: true});
+    loadingTask.promise
+      .then(file => {
+        pdf = file
+        slides_available.value = true
+        console.log("loaded pdf")
+        console.log(file)
+
+        // this resolves with null if the pdf has no labels
+        file.getPageLabels()
+          .then(lbl => {
+            if(lbl !== null) {
+              labels = lbl;
+              last_label_start = get_label_start(pdf.numPages)
+              first_label_end = get_label_end(1)
+            } else {
+              // every slide has its own label
+              first_label_end = 1
+              last_label_start = store.presentation.num_slides
+            }
+            // labels_available tracks if the labels are *initialized*
+            // but it does not signify if the labels come from the pdf or are copies of the slide numbers
+            labels_available.value = true
+            resolve()
+          })
+          .catch((reason) => reject(reason));
+    })
+    .catch((reason) => reject(reason));
+  });
+}
+
 
 export var pdf = undefined
 export const slides_available = ref(false)
@@ -74,38 +111,4 @@ export function prev_label_start(x) {
 
   let ple = prev_label_end(x)
   return get_label_start(ple)
-}
-
-export function load_slides(slide_url) {
-  return new Promise((resolve, reject) => {
-    // asynchronous download of PDF
-    var loadingTask = pdfjsLib.getDocument({url: slide_url,withCredentials: true});
-    loadingTask.promise
-      .then(file => {
-        pdf = file
-        slides_available.value = true
-        console.log("loaded pdf")
-        console.log(file)
-
-        // this resolves with null if the pdf has no labels
-        file.getPageLabels()
-          .then(lbl => {
-            if(lbl !== null) {
-              labels = lbl;
-              last_label_start = get_label_start(pdf.numPages)
-              first_label_end = get_label_end(1)
-            } else {
-              // every slide has its own label
-              first_label_end = 1
-              last_label_start = store.presentation.num_slides
-            }
-            // labels_available tracks if the labels are *initialized*
-            // but it does not signify if the labels come from the pdf or are copies of the slide numbers
-            labels_available.value = true
-            resolve()
-          })
-          .catch((reason) => reject(reason));
-    })
-    .catch((reason) => reject(reason));
-  });
 }

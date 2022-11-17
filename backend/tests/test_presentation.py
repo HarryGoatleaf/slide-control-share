@@ -68,6 +68,12 @@ def test_switch_presentation(presentation, second_presentation):
     assert presentation.presentation_id == data['presentation']['id']
     assert second_presentation.presentation_id != data['presentation']['id']
 
+def test_switch_to_nonexistent_presentation(presentation, second_presentation):
+    # switch presentation
+    data = second_presentation.get('/api/presentation/nonexistent').get_json()
+    assert data['status'] == 'failed'
+    assert data['message'] == 'presentation does not exist'
+
 def test_get_current_slide(presentation):
     data = presentation.get('/api/presentation/'
         + str(presentation.presentation_id) + '/current_slide').get_json()

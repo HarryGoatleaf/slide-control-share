@@ -25,7 +25,10 @@ def load_presentation():
     g.presentation = Presentation.objects.get(id=ObjectId(presentation_id))
     # TODO: presentation_id's cant be forged but can it happen that they do not exist in db?
 
-# routes
+
+##########
+# routes #
+##########
 @bp.route('/create', methods = ['POST'])
 @name_required
 def create():
@@ -70,7 +73,11 @@ def create():
 def presentation(presentation_id):
   # case: user joins presentation
   if g.presentation == None:
-    return join_presentation(presentation_id)
+    try:
+      join_presentation(presentation_id)
+    except:
+      return {'status': 'failed', 'message': 'presentation does not exist'}
+    return { 'status': 'success', 'presentation': g.presentation.encode() }
 
   # case: user reloads page
   elif str(g.presentation.id) == presentation_id:
@@ -84,7 +91,13 @@ def presentation(presentation_id):
       str(g.presentation.id),
       presentation_id)
     leave_current_presentation()
-    return join_presentation(presentation_id)
+
+    try:
+      join_presentation(presentation_id)
+    except:
+      return {'status': 'failed', 'message': 'presentation does not exist'}
+
+    return { 'status': 'success', 'presentation': g.presentation.encode() }
 
 @bp.route('/<string:presentation_id>/current_slide', methods =['GET', 'POST'])
 @name_required
@@ -130,14 +143,19 @@ def slides(presentation_id):
   if request.method == 'GET':
     return send_file(g.presentation.slides, as_attachment=True, mimetype='application/pdf', download_name='slides.pdf')
 
-# helper methods
+
+##################
+# helper methods #
+##################
 def join_presentation(presentation_id):
-  """ Tries to join <presentation_id> and returns API response JSON """
+  """ Tries to join <presentation_id>. May throw exception! """
+
   # fetch requested presentation from database
   try:
     presentation = Presentation.objects.get(id=ObjectId(presentation_id))
   except:
-    return {'status': 'failed', 'message': 'presentation does not exist'}
+    #return {'status': 'failed', 'message': 'presentation does not exist'}
+    raise Exception('presentation does not exist')
 
   # add presentation to user session data
   session['presentation_id'] = presentation_id
@@ -158,7 +176,6 @@ def join_presentation(presentation_id):
       str(g.user.name),
       str(g.presentation.id))
 
-  return { 'status': 'success', 'presentation': g.presentation.encode() }
 
 def leave_current_presentation():
   """ Leaves the presentation saved in the session cookie """
@@ -176,6 +193,12 @@ def leave_current_presentation():
   #       the room should automatically be left when changing presentations.
   # leave_room(str(g.presentation.id))
   # TODO: broadcast leave to other users
+
+  # TODO: REFACTOR THIS. currently sending whole presentation
+  # becuase of lack of proper encoding
+  socketio.emit('set_users',
+   g.presentation.encode(),
+   to=g.presentation.id)
 
   # remove presentation from session
   session['presentation_id'] = None
