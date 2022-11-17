@@ -33,7 +33,7 @@ export default {
           .catch((error) => {
             console.log(error)
           });
-        
+
       }
       reader.onerror = () => {
         console.log(reader.error)
@@ -58,23 +58,39 @@ export default {
 
 <template>
 
-<h1>Create</h1>
+<div id="wrapper">
+  <div id="content">
 
-<form @submit="onSubmit">
+    <h1>Create Session</h1>
 
-<label for="slides">Slides: </label>
-<br>
-<input 
-  type="file" 
-  name="slides"
-  @change="event => input_slides = event.target.files[0]">
-  
-<br>
-  
-<input type="submit"/>
-</form>
+    <form @submit="onSubmit">
+
+    <label for="slides">PDF File: </label>
+    <br>
+    <input
+      type="file"
+      name="slides"
+      accept=".pdf"
+      @change="event => input_slides = event.target.files[0]">
+    <br>
+    <input type="submit" value="Start!"/>
+    </form>
+
+  </div>
+</div>
 
 </template>
 
 <style scoped>
+#wrapper {
+  display: flex;
+  height: 100%;
+  flex-direction: row;
+  justify-content: center;
+  padding-top: 20%;
+}
+
+h1 {
+  text-align: center;
+}
 </style>

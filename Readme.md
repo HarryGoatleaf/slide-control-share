@@ -5,8 +5,8 @@
 ## Design Goals
 
 * no login required
-* fast 💨
-* pretty ✨
+* 💨 fast
+* ✨ pretty
 
 ## Deploying
 
