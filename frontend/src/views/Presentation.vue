@@ -88,7 +88,7 @@ export default {
     this.store.get_presentation(this.$route.params.url_presentation_id)
       .then(presi => {
         // init socket after fetching url to guaratee that session (cookie) contains presentation_id
-        const socket = io("http://127.0.0.1:5000", {
+        const socket = io(import.meta.env.VITE_BACKEND_URL, {
           withCredentials: true
           });
 
