@@ -35,3 +35,4 @@ coverage
 backend/backend.egg-info
 backend/.coverage
 backend/build/lib/backend
+frontend/.vscode/settings.json
