@@ -14,11 +14,12 @@ services:
     command: /bin/sh -c "while sleep 1000; do :; done"
 
   frontend:
-    build: 
+    build:
       context: frontend
       dockerfile: .devcontainer/Dockerfile
     volumes:
       - ./frontend:/app
+    # prevent container from exiting
     command: /bin/sh -c "while sleep 1000; do :; done"
 
   # database service

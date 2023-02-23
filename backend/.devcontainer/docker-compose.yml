@@ -14,7 +14,9 @@ services:
     command: /bin/sh -c "while sleep 1000; do :; done"
 
   frontend:
-    build: ../../frontend
+    build:
+      context: ../frontend
+      dockerfile: ../frontend/Dockerfile.local
     ports:
       - "80:80"
 
